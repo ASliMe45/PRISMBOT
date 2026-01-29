@@ -21,6 +21,12 @@ module.exports = {
         name: 'PRISMBOT SYSTEM'                            // Nombre del newsletter
     },
     
+    // ===== CONFIGURACIÓN DE GITHUB (ACTUALIZACIONES) =====
+    github: {
+        repo: 'https://github.com/ASliMe45/PRISMBOT',      // URL del repositorio
+        branch: 'main'                                      // Rama por defecto
+    },
+    
     // ===== CONFIGURACIÓN DE VERSION =====
     version: "2.0.0"               // Versión del bot
 };

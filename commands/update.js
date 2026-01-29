@@ -5,6 +5,7 @@
 
 // ===== IMPORTACIONES =====
 const { exec } = require('child_process');
+const settings = require('../settings');
 
 module.exports = {
     name: 'update',
@@ -15,10 +16,11 @@ module.exports = {
             if (!senderIsOwner) return;
             
             // Notificar que está buscando actualizaciones
-            await sock.sendMessage(chatId, { text: "🔄 Buscando actualizaciones..." });
+            await sock.sendMessage(chatId, { text: `🔄 Buscando actualizaciones desde ${settings.github.repo}...` });
             
-            // Ejecutar git pull
-            exec('git pull', (err, stdout) => {
+            // Ejecutar git pull desde el repositorio configurado
+            const gitCommand = `git pull origin ${settings.github.branch}`;
+            exec(gitCommand, (err, stdout) => {
                 if (err) {
                     console.error('Error en actualización:', err);
                     return sock.sendMessage(chatId, { text: `❌ Error: ${err.message}` });
