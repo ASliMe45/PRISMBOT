@@ -17,14 +17,14 @@ async function handleMessages(sock, chatUpdate) {
         const args = body.trim().split(/\s+/).slice(1);
         const text = args.join(" ");
         
-        const isOwner = senderId.includes(settings.ownerNumber);
+        const senderIsOwner = senderId.includes(settings.ownerNumber);
         const { isSenderAdmin, isBotAdmin } = chatId.endsWith('@g.us') ? await isAdmin(sock, chatId, senderId) : { isSenderAdmin: false, isBotAdmin: false };
 
         const commands = loader.getCommands();
         const cmd = commands.get(commandName) || [...commands.values()].find(c => c.alias?.includes(commandName));
 
         if (cmd) {
-            await cmd.execute(sock, chatId, m, { args, text, isOwner, isSenderAdmin, isBotAdmin, commandName });
+            await cmd.execute(sock, chatId, m, { args, text, senderId, senderIsOwner, isSenderAdmin, isBotAdmin, commandName, settings });
         }
     } catch (e) { console.error('Error main:', e); }
 }
