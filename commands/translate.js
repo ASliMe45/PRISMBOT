@@ -1,41 +1,41 @@
 /**
- * COMANDO: TRT/TRANSLATE
- * Traduce textos a diferentes idiomas usando Google Translate
+ * COMMAND: TRT/TRANSLATE
+ * Translates texts into different languages using Google Translate
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const axios = require('axios');
 
 module.exports = {
     name: 'trt',
-    alias: ['translate', 'traducir'],
+    alias: ['translate', 'trans'],
     async execute(sock, chatId, m, { args }) {
         try {
-            // Validar argumentos
+            // Validate arguments
             if (args.length < 2) {
                 return sock.sendMessage(chatId, { 
-                    text: "❌ Uso: .trt <idioma> <texto>\n\nEjemplos:\n.trt en Hola\n.trt es Hello\n.trt fr Bonjour" 
+                    text: "❌ Usage: .trt <language> <text>\n\nExamples:\n.trt en Hello\n.trt es Hola\n.trt fr Bonjour" 
                 });
             }
             
-            // Obtener idioma y texto
+            // Get language and text
             const lang = args[0].toLowerCase();
             const msg = args.slice(1).join(" ");
             
-            // Traducir usando Google Translate API
+            // Translate using Google Translate API
             const res = await axios.get(
                 `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(msg)}`
             );
             
             const translation = res.data[0][0][0];
             
-            // Enviar resultado
+            // Send result
             await sock.sendMessage(chatId, { 
-                text: `🌐 *TRADUCCIÓN*\n\n📝 Original: ${msg}\n🔤 Idioma: ${lang}\n✅ Traducido: ${translation}` 
+                text: `🌐 *TRANSLATION*\n\n📝 Original: ${msg}\n🔤 Language: ${lang}\n✅ Translated: ${translation}` 
             }, { quoted: m });
         } catch (e) {
-            console.error('Error en comando translate:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al traducir el texto." });
+            console.error('Error in translate command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error translating the text." });
         }
     }
 };

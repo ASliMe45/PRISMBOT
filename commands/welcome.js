@@ -1,42 +1,42 @@
 /**
- * COMANDO: WELCOME
- * Configura mensajes automáticos de bienvenida para nuevos miembros
+ * COMMAND: WELCOME
+ * Configures automatic welcome messages for new members
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const { addWelcome, delWelcome } = require('../lib/index');
 
 module.exports = {
     name: 'welcome',
-    alias: ['bienvenida'],
+    alias: ['greeting'],
     async execute(sock, chatId, m, { args, text, senderIsOwner }) {
-        // Solo el owner puede usar este comando
+        // Only the owner can use this command
         if (!senderIsOwner) return;
         
-        // Extraer acción y contenido
+        // Extract action and content
         const action = args[0]?.toLowerCase();
         const content = args.slice(1).join(' ');
 
-        // ===== PROCESAMIENTO DE ACCIONES =====
+        // ===== ACTION PROCESSING =====
         if (action === 'on') {
-            // Activar bienvenidas automáticas
+            // Enable automatic welcomes
             await addWelcome(chatId, true);
-            await sock.sendMessage(chatId, { text: "✅ Bienvenidas automáticas activadas." });
+            await sock.sendMessage(chatId, { text: "✅ Automatic greetings enabled." });
             
         } else if (action === 'off') {
-            // Desactivar bienvenidas automáticas
+            // Disable automatic welcomes
             await delWelcome(chatId);
-            await sock.sendMessage(chatId, { text: "🚫 Bienvenidas automáticas desactivadas." });
+            await sock.sendMessage(chatId, { text: "🚫 Automatic greetings disabled." });
             
         } else if (action === 'set') {
-            // Configurar mensaje personalizado de bienvenida
+            // Configure custom welcome message
             if (!content) {
                 return sock.sendMessage(chatId, { 
-                    text: "❌ Uso: .welcome set Tu mensaje aquí\\n\\nVariables:\\n{user} = Nombre del usuario\\n{group} = Nombre del grupo\\n\\nEj: .welcome set Bienvenido {user} a {group}" 
+                    text: "❌ Usage: .welcome set Your message here\\n\\nVariables:\\n{user} = User name\\n{group} = Group name\\n\\nEx: .welcome set Welcome {user} to {group}" 
                 });
             }
             await addWelcome(chatId, true, content);
-            await sock.sendMessage(chatId, { text: "✅ Mensaje de bienvenida guardado." });
+            await sock.sendMessage(chatId, { text: "✅ Welcome message saved." });
         }
     }
 };

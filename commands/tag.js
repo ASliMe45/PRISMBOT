@@ -1,36 +1,36 @@
 /**
- * COMANDO: TAGALL/TODOS/TAG
- * Menciona a todos los miembros del grupo con un mensaje
+ * COMMAND: TAGALL/EVERYONE/TAG
+ * Mentions all group members with a message
  */
 
 module.exports = {
     name: 'tagall',
-    alias: ['todos', 'tag'],
+    alias: ['everyone', 'tag'],
     async execute(sock, chatId, m, { text, isSenderAdmin, isBotAdmin }) {
         try {
-            // Verificar permisos
+            // Check permissions
             if (!isSenderAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesitas ser admin del grupo para usar este comando." });
+                return sock.sendMessage(chatId, { text: "❌ You need to be a group admin to use this command." });
             }
             
             if (!isBotAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesito ser admin del grupo para mencionar a todos." });
+                return sock.sendMessage(chatId, { text: "❌ I need to be a group admin to mention everyone." });
             }
 
-            // Obtener metadata del grupo
+            // Get group metadata
             const metadata = await sock.groupMetadata(chatId);
             const participants = metadata.participants;
             let mentions = participants.map(p => p.id);
             
-            // Construir mensaje
-            let message = `📢 *MENSAJE DEL ADMIN*\n━━━━━━━━━━━━━━━━\n\n${text || 'Mensaje importante para el grupo'}\n\n━━━━━━━━━━━━━━━━\n\n`;
+            // Build message
+            let message = `📢 *ADMIN MESSAGE*\n━━━━━━━━━━━━━━━━\n\n${text || 'Important message for the group'}\n\n━━━━━━━━━━━━━━━━\n\n`;
             participants.forEach(p => message += `◦ @${p.id.split('@')[0]}\n`);
             
-            // Enviar mensaje con menciones
+            // Send message with mentions
             await sock.sendMessage(chatId, { text: message, mentions }, { quoted: m });
         } catch (e) {
-            console.error('Error en comando tagall:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al mencionar a todos los miembros." });
+            console.error('Error in tagall command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error mentioning all members." });
         }
     }
 };

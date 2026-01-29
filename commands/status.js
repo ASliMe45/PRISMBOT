@@ -1,9 +1,9 @@
 /**
- * COMANDO: STATUS/INFO/BOTSTAT
- * Muestra el estado actual del bot (uptime, RAM, versión, etc.)
+ * COMMAND: STATUS/INFO/BOTSTAT
+ * Shows the current bot status (uptime, RAM, version, etc.)
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const os = require('os');
 const stats = require('../lib/stats');
 
@@ -11,24 +11,24 @@ module.exports = {
     name: 'status',
     alias: ['info', 'botstat'],
     async execute(sock, chatId, m, { settings }) {
-        // Obtener estadísticas
+        // Get statistics
         const dataStats = stats.get();
         const uptime = process.uptime();
         const ram = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
 
-        // Construir mensaje de estado
+        // Build status message
         const statusText = `
-🤖 *ESTADO DE ${settings.botName}*
+🤖 *STATUS OF ${settings.botName}*
 ━━━━━━━━━━━━━━━━
 🚀 Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m
 💾 RAM: ${ram} MB
-📊 Comandos: ${dataStats.commands || 0}
-👥 Grupos: ${dataStats.groups?.length || 0}
-📡 Versión: ${settings.version}
+📊 Commands: ${dataStats.commands || 0}
+👥 Groups: ${dataStats.groups?.length || 0}
+📡 Version: ${settings.version}
 ━━━━━━━━━━━━━━━━
 `.trim();
 
-        // Enviar estado
+        // Send status
         await sock.sendMessage(chatId, { text: statusText }, { quoted: m });
     }
 };

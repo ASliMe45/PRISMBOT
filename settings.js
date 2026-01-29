@@ -1,32 +1,32 @@
 /**
- * CONFIGURACIÓN GENERAL DEL BOT PRISMBOT
- * Este archivo contiene todas las configuraciones principales del bot
+ * GENERAL CONFIGURATION FOR PRISMBOT
+ * This file contains all main bot configurations
  */
 
 module.exports = {
-    // ===== INFORMACIÓN DEL BOT =====
-    botName: "PRISMBOT",           // Nombre del bot
-    packname: "PRISMBOT",          // Nombre del paquete de stickers
-    author: "PRISM GEN",           // Autor del bot
-    prefix: ".",                   // Prefijo de comandos
+    // ===== BOT INFORMATION =====
+    botName: "PRISMBOT",           // Bot name
+    packname: "PRISMBOT",          // Sticker pack name
+    author: "PRISM GEN",           // Bot author
+    prefix: ".",                   // Command prefix
     
-    // ===== NÚMEROS Y CONTACTOS =====
-    ownerNumber: "4915511504529",  // Número del owner principal
-    pairingNumber: "4915511504529", // Número para vincular el bot
+    // ===== NUMBERS AND CONTACTS =====
+    ownerNumber: "4915511504529",  // Main owner number
+    pairingNumber: "4915511504529", // Number to pair the bot
     
-    // ===== CONFIGURACIÓN DEL NEWSLETTER =====
+    // ===== NEWSLETTER CONFIGURATION =====
     newsletter: {
-        enabled: true,                                      // Activar/desactivar newsletter
-        jid: '120363425540907918@newsletter',              // ID del newsletter
-        name: 'PRISMBOT SYSTEM'                            // Nombre del newsletter
+        enabled: true,                                      // Enable/disable newsletter
+        jid: '120363425540907918@newsletter',              // Newsletter ID
+        name: 'PRISMBOT SYSTEM'                            // Newsletter name
     },
     
-    // ===== CONFIGURACIÓN DE GITHUB (ACTUALIZACIONES) =====
+    // ===== GITHUB CONFIGURATION (UPDATES) =====
     github: {
-        repo: 'https://github.com/ASliMe45/PRISMBOT',      // URL del repositorio
-        branch: 'main'                                      // Rama por defecto
+        repo: 'https://github.com/ASliMe45/PRISMBOT',      // Repository URL
+        branch: 'main'                                      // Default branch
     },
     
-    // ===== CONFIGURACIÓN DE VERSION =====
-    version: "2.0.0"               // Versión del bot
+    // ===== VERSION CONFIGURATION =====
+    version: "2.0.0"               // Bot version
 };

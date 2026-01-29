@@ -1,35 +1,35 @@
 /**
- * COMANDO: GOODBYE/ADIOS
- * Configura mensajes automáticos de despedida para miembros que salen
+ * COMMAND: GOODBYE/FAREWELL
+ * Configures automatic farewell messages for members who leave
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const { addGoodbye, delGoodBye } = require('../lib/index');
 
 module.exports = {
     name: 'goodbye',
-    alias: ['adios'],
+    alias: ['farewell'],
     async execute(sock, chatId, m, { args, senderIsOwner }) {
-        // Solo el owner puede usar este comando
+        // Only the owner can use this command
         if (!senderIsOwner) return;
         
-        // Extraer acción
+        // Extract action
         const action = args[0]?.toLowerCase();
 
-        // ===== PROCESAMIENTO DE ACCIONES =====
+        // ===== ACTION PROCESSING =====
         if (action === 'on') {
-            // Activar despedidas automáticas
+            // Enable automatic farewells
             await addGoodbye(chatId, true);
-            await sock.sendMessage(chatId, { text: "✅ Despedidas automáticas activadas." });
+            await sock.sendMessage(chatId, { text: "✅ Automatic farewells enabled." });
             
         } else if (action === 'off') {
-            // Desactivar despedidas automáticas
+            // Disable automatic farewells
             await delGoodBye(chatId);
-            await sock.sendMessage(chatId, { text: "🚫 Despedidas automáticas desactivadas." });
+            await sock.sendMessage(chatId, { text: "🚫 Automatic farewells disabled." });
         } else {
-            // Mostrar ayuda
+            // Show help
             await sock.sendMessage(chatId, { 
-                text: "❌ Uso incorrecto\\n\\n.goodbye on ➜ Activar\\n.goodbye off ➜ Desactivar" 
+                text: "❌ Incorrect usage\\n\\n.goodbye on ➜ Enable\\n.goodbye off ➜ Disable" 
             });
         }
     }

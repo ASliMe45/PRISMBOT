@@ -1,29 +1,29 @@
 /**
- * COMANDO: GIVEAWAY/SORTEO
- * Permite crear sorteos en el grupo y elegir ganadores aleatoriamente
+ * COMMAND: GIVEAWAY/RAFFLE
+ * Allows creating raffles in the group and choosing winners randomly
  */
 
-// ===== ALMACENAMIENTO DE SORTEOS =====
+// ===== GIVEAWAY STORAGE =====
 let giveawayCache = {};
 
 module.exports = {
     name: 'giveaway',
-    alias: ['sorteo', 'concurso'],
+    alias: ['raffle', 'contest'],
     async execute(sock, chatId, m, { args, text, senderIsOwner }) {
         try {
-            // Solo el owner puede hacer sorteos
+            // Only the owner can create raffles
             if (!senderIsOwner) return;
             
             const action = args[0]?.toLowerCase();
 
-            // ===== INICIAR SORTEO =====
+            // ===== START RAFFLE =====
             if (action === 'start') {
                 const prize = args.slice(1).join(" ");
                 if (!prize) {
-                    return sock.sendMessage(chatId, { text: "❌ Uso: .giveaway start <premio>\n\nEj: .giveaway start Airpods" });
+                    return sock.sendMessage(chatId, { text: "❌ Usage: .giveaway start <prize>\n\nEx: .giveaway start Airpods" });
                 }
                 
-                // Guardar sorteo en caché
+                // Save raffle in cache
                 giveawayCache[chatId] = { 
                     prize, 
                     status: 'active',
@@ -31,45 +31,45 @@ module.exports = {
                 };
                 
                 await sock.sendMessage(chatId, { 
-                    text: `🎉 *SORTEO INICIADO*\n━━━━━━━━━━━━━━━━\n🎁 Premio: ${prize}\n\nReacciona con 👋 para participar\n\n.giveaway end (para finalizar)` 
+                    text: `🎉 *RAFFLE STARTED*\n━━━━━━━━━━━━━━━━\n🎁 Prize: ${prize}\n\nReact with 👋 to participate\n\n.giveaway end (to finish)` 
                 });
 
-            // ===== FINALIZAR SORTEO =====
+            // ===== END RAFFLE =====
             } else if (action === 'end') {
-                // Verificar que haya un sorteo activo
+                // Check that there is an active raffle
                 if (!giveawayCache[chatId]) {
-                    return sock.sendMessage(chatId, { text: "❌ No hay sorteo activo en este grupo." });
+                    return sock.sendMessage(chatId, { text: "❌ There is no active raffle in this group." });
                 }
                 
-                // Obtener participantes del grupo
+                // Get group participants
                 const metadata = await sock.groupMetadata(chatId);
                 const participants = metadata.participants;
                 
                 if (participants.length === 0) {
-                    return sock.sendMessage(chatId, { text: "❌ No hay participantes en el grupo." });
+                    return sock.sendMessage(chatId, { text: "❌ There are no participants in the group." });
                 }
                 
-                // Seleccionar ganador aleatorio
+                // Select random winner
                 const winner = participants[Math.floor(Math.random() * participants.length)];
                 const prizeInfo = giveawayCache[chatId];
                 
-                // Anunciar ganador
+                // Announce winner
                 await sock.sendMessage(chatId, { 
-                    text: `🎊 *SORTEO FINALIZADO*\n━━━━━━━━━━━━━━━━\n🏆 Ganador: @${winner.id.split('@')[0]}\n🎁 Premio: ${prizeInfo.prize}\n\n¡Felicitaciones!`,
+                    text: `🎊 *RAFFLE FINISHED*\n━━━━━━━━━━━━━━━━\n🏆 Winner: @${winner.id.split('@')[0]}\n🎁 Prize: ${prizeInfo.prize}\n\nCongratulations!`,
                     mentions: [winner.id]
                 });
                 
-                // Eliminar sorteo de caché
+                // Remove raffle from cache
                 delete giveawayCache[chatId];
             } else {
-                // Mostrar ayuda
+                // Show help
                 await sock.sendMessage(chatId, { 
-                    text: "⚙️ *COMANDOS DE SORTEO*\n\n.giveaway start <premio> ➜ Iniciar\n.giveaway end ➜ Finalizar y elegir ganador" 
+                    text: "⚙️ *RAFFLE COMMANDS*\n\n.giveaway start <prize> ➜ Start\n.giveaway end ➜ Finish and choose winner" 
                 });
             }
         } catch (e) {
-            console.error('Error en comando giveaway:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al procesar el sorteo." });
+            console.error('Error in giveaway command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error processing the raffle." });
         }
     }
 };

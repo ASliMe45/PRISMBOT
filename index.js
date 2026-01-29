@@ -1,9 +1,9 @@
 /**
- * ARCHIVO PRINCIPAL DEL BOT PRISMBOT
- * Inicia la conexión con WhatsApp y maneja los eventos principales
+ * PRISMBOT MAIN FILE
+ * Starts the WhatsApp connection and handles main events
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const { 
     default: makeWASocket, 
     useMultiFileAuthState, 
@@ -18,101 +18,101 @@ const { getWelcome } = require('./lib/index');
 const stats = require('./lib/stats');
 const settings = require('./settings');
 
-// ===== MANTENER EL PROCESO ACTIVO =====
-// Evita que Node.js cierre el proceso si no hay actividad
+// ===== KEEP PROCESS ACTIVE =====
+// Prevents Node.js from closing the process if there is no activity
 setInterval(() => {}, 1000 * 60 * 60);
 
 /**
- * Inicia el bot de WhatsApp
- * Configura el socket, maneja autenticación y eventos
+ * Starts the WhatsApp bot
+ * Configures socket, handles authentication and events
  */
 async function startBot() {
-    // Obtener estado de autenticación
+    // Get authentication state
     const { state, saveCreds } = await useMultiFileAuthState(`./session`);
     const { version } = await fetchLatestBaileysVersion();
 
-    // ===== CONFIGURACIÓN DEL SOCKET DE WHATSAPP =====
+    // ===== WHATSAPP SOCKET CONFIGURATION =====
     const sock = makeWASocket({
-        version,                                                      // Versión de Baileys
-        logger: pino({ level: 'silent' }),                          // Logger silencioso
-        printQRInTerminal: false,                                   // No mostrar QR en terminal
+        version,                                                      // Baileys version
+        logger: pino({ level: 'silent' }),                          // Silent logger
+        printQRInTerminal: false,                                   // Don't show QR in terminal
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })),
         },
-        browser: ["Chrome (Linux)", "PrismBot", "1.0.0"],           // Nombre del navegador
-        syncFullHistory: false,                                      // No sincronizar historial
-        markOnlineOnConnect: true,                                  // Marcar como conectado
+        browser: ["Chrome (Linux)", "PrismBot", "1.0.0"],           // Browser name
+        syncFullHistory: false,                                      // Don't sync history
+        markOnlineOnConnect: true,                                  // Mark as online on connect
     });
 
     /**
-     * Solicita el código de vinculación si no está registrado
-     * Reintenta cada 5 minutos si falla
+     * Request pairing code if not registered
+     * Retries every 5 minutes if it fails
      */
     const requestPairing = async () => {
         if (!sock.authState.creds.registered) {
             const phoneNumber = settings.pairingNumber.replace(/[^0-9]/g, '');
-            console.log(chalk.cyan(`🔹 Intentando generar código para: ${phoneNumber}`));
+            console.log(chalk.cyan(`🔹 Attempting to generate code for: ${phoneNumber}`));
             
-            // Esperamos 15 segundos para que el socket se estabilice
+            // Wait 15 seconds for socket to stabilize
             await new Promise(resolve => setTimeout(resolve, 15000));
             
             try {
                 const code = await sock.requestPairingCode(phoneNumber);
-                console.log(chalk.black.bgGreen.bold(`\n TU CÓDIGO DE VINCULACIÓN: ${code} \n`));
+                console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${code} \n`));
             } catch (error) {
-                console.log(chalk.red(`❌ Error 428: WhatsApp rechazó la petición. Esperando 5 min para reintentar...`));
-                // Reintentar en 5 minutos
+                console.log(chalk.red(`❌ Error 428: WhatsApp rejected the request. Waiting 5 min to retry...`));
+                // Retry in 5 minutes
                 setTimeout(requestPairing, 300000);
             }
         }
     };
 
-    // Solicitar código si no está registrado
+    // Request code if not registered
     if (!sock.authState.creds.registered) {
         requestPairing();
     }
 
-    // ===== EVENTOS DEL SOCKET =====
+    // ===== SOCKET EVENTS =====
     
     /**
-     * Evento: Guardar credenciales actualizadas
-     * Se ejecuta cuando Baileys actualiza las credenciales
+     * Event: Update saved credentials
+     * Executed when Baileys updates credentials
      */
     sock.ev.on('creds.update', saveCreds);
 
     /**
-     * Evento: Actualización de participantes en grupos
-     * Maneja bienvenidas automáticas cuando alguien entra
+     * Event: Group participant updates
+     * Handles automatic greetings when someone joins
      */
     sock.ev.on('group-participants.update', async (anu) => {
         const { id, participants, action } = anu;
         
-        // Solo actuar si alguien fue añadido al grupo
+        // Only act if someone was added to the group
         if (action === 'add') {
             const conf = getWelcome(id);
             
-            // Verificar si el grupo tiene bienvenidas habilitadas
+            // Check if group has greetings enabled
             if (conf && conf.status) {
                 try {
                     const metadata = await sock.groupMetadata(id);
                     
-                    // Enviar mensaje de bienvenida a cada nuevo miembro
+                    // Send greeting message to each new member
                     for (let num of participants) {
-                        let msg = conf.message || "Bienvenido @user";
+                        let msg = conf.message || "Welcome @user";
                         msg = msg.replace('@user', `@${num.split('@')[0]}`).replace('@group', metadata.subject);
                         await sock.sendMessage(id, { text: msg, mentions: [num] });
                     }
                 } catch (e) {
-                    console.error('Error al enviar bienvenida:', e);
+                    console.error('Error sending welcome message:', e);
                 }
             }
         }
     });
 
     /**
-     * Evento: Nuevos mensajes
-     * Procesa todos los mensajes entrantes
+     * Event: New messages
+     * Processes all incoming messages
      */
     sock.ev.on('messages.upsert', async chatUpdate => {
         if (chatUpdate.type === 'notify') {
@@ -121,66 +121,66 @@ async function startBot() {
     });
 
     /**
-     * Evento: Cambios de conexión
-     * Maneja desconexiones y reconexiones automáticas
-     * Envía notificación de conexión al newsletter
+     * Event: Connection changes
+     * Handles disconnections and automatic reconnections
+     * Sends connection notification to newsletter
      */
     sock.ev.on('connection.update', async (u) => {
         const { connection, lastDisconnect } = u;
         
         if (connection === 'close') {
             const reason = lastDisconnect?.error?.output?.statusCode;
-            console.log(chalk.red(`⚠️ Conexión cerrada. Razón: ${reason}`));
+            console.log(chalk.red(`⚠️ Connection closed. Reason: ${reason}`));
             
-            // Reintentar conexión si no fue cierre voluntario
+            // Retry connection if it was not a voluntary logout
             if (reason !== DisconnectReason.loggedOut) {
-                console.log(chalk.yellow('🔄 Reconectando en 5 segundos...'));
+                console.log(chalk.yellow('🔄 Reconnecting in 5 seconds...'));
                 setTimeout(() => startBot(), 5000);
             } else {
-                console.log(chalk.red('❌ Sesión cerrada. Elimina ./session para conectar de nuevo.'));
+                console.log(chalk.red('❌ Session closed. Delete ./session to connect again.'));
             }
         } else if (connection === 'open') {
-            console.log(chalk.green.bold('✅ PRISMBOT CONECTADO CORRECTAMENTE'));
+            console.log(chalk.green.bold('✅ PRISMBOT CONNECTED SUCCESSFULLY'));
             
-            // Enviar mensaje al newsletter
+            // Send message to newsletter
             try {
                 const botStats = stats.get();
                 const uptime = process.uptime();
                 
                 const bootMessage = `
 ╔════════════════════════════════════════════╗
-║     🤖 ${settings.botName} - ARRANCÓ EXITOSAMENTE 🚀    ║
+║     🤖 ${settings.botName} - SUCCESSFULLY BOOTED 🚀     ║
 ╚════════════════════════════════════════════╝
 
-⏰ HORA DE INICIO: ${new Date().toLocaleString('es-ES')}
+⏰ BOOT TIME: ${new Date().toLocaleString('en-US')}
 
-📊 ESTADÍSTICAS DEL BOT:
+📊 BOT STATISTICS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ✅ Estado: OPERACIONAL
-  🟢 Conexión: ACTIVA
-  📱 Versión: ${settings.version}
+  ✅ Status: OPERATIONAL
+  🟢 Connection: ACTIVE
+  📱 Version: ${settings.version}
   👨‍💼 Owner: @${settings.ownerNumber}
-  📝 Comandos: ${botStats.commands || 0}
-  👥 Grupos: ${botStats.groups?.length || 0}
+  📝 Commands: ${botStats.commands || 0}
+  👥 Groups: ${botStats.groups?.length || 0}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💬 El bot está listo para recibir órdenes
-   Escribe .help para ver los comandos
+💬 The bot is ready to receive commands
+   Type .help to see available commands
 
-🔧 Autor: ${settings.author}
-🏠 Repositorio: ${settings.github.repo}
+🔧 Author: ${settings.author}
+🏠 Repository: ${settings.github.repo}
 
 ═════════════════════════════════════════════
-      ¡BOT LISTO PARA DOMINAR EL MUNDO! 🌍
+       BOT READY TO DOMINATE THE WORLD! 🌍
 ═════════════════════════════════════════════
 `.trim();
 
-                // Enviar al newsletter
+                // Send to newsletter
                 await sock.sendMessage(settings.newsletter.jid, { 
                     text: bootMessage
                 });
             } catch (e) {
-                console.error('Error al enviar mensaje de boot al newsletter:', e);
+                console.error('Error sending boot message to newsletter:', e);
             }
         }
     });
@@ -188,8 +188,8 @@ async function startBot() {
     return sock;
 }
 
-// Iniciar el bot y capturar errores críticos
+// Start bot and capture critical errors
 startBot().catch(err => {
-    console.error(chalk.red("Error crítico al iniciar el bot:"), err);
+    console.error(chalk.red("Critical error starting bot:"), err);
     process.exit(1);
 });

@@ -1,38 +1,38 @@
 /**
- * COMANDO: REPORT/REPORTAR
- * Permite a los usuarios reportar problemas al owner
+ * COMMAND: REPORT/REPORT_ISSUE
+ * Allows users to report issues to the owner
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const fs = require('fs');
 const path = './data/reports.json';
 
 module.exports = {
     name: 'report',
-    alias: ['reportar'],
+    alias: ['reportissue'],
     async execute(sock, chatId, m, { text, senderId, senderIsOwner, args }) {
-        // Crear carpeta y archivo si no existen
+        // Create folder and file if they don't exist
         if (!fs.existsSync('./data')) fs.mkdirSync('./data');
         if (!fs.existsSync(path)) fs.writeFileSync(path, JSON.stringify([]));
 
-        // ===== LISTAR REPORTES (Solo owner) =====
+        // ===== LIST REPORTS (Owner only) =====
         if (args[0] === 'list' && senderIsOwner) {
             const reports = JSON.parse(fs.readFileSync(path));
             
             if (reports.length === 0) {
-                return sock.sendMessage(chatId, { text: "📋 No hay reportes" });
+                return sock.sendMessage(chatId, { text: "📋 No reports" });
             }
             
-            let txt = "🚩 *REPORTES ACTIVOS*\n━━━━━━━━━━━━━━━━\n\n";
+            let txt = "🚩 *ACTIVE REPORTS*\n━━━━━━━━━━━━━━━━\n\n";
             reports.forEach(r => {
-                txt += `📌 ID: ${r.id}\n👤 De: @${r.from.split('@')[0]}\n💬 Mensaje: ${r.issue}\n🕐 Fecha: ${r.date}\n───────────────\n\n`;
+                txt += `📌 ID: ${r.id}\n👤 From: @${r.from.split('@')[0]}\n💬 Message: ${r.issue}\n🕐 Date: ${r.date}\n───────────────\n\n`;
             });
             return sock.sendMessage(chatId, { text: txt, mentions: reports.map(r => r.from) });
         }
 
-        // ===== CREAR NUEVO REPORTE =====
+        // ===== CREATE NEW REPORT =====
         if (!text) {
-            return sock.sendMessage(chatId, { text: "❌ Uso: .report <tu mensaje de reporte>" });
+            return sock.sendMessage(chatId, { text: "❌ Usage: .report <your report message>" });
         }
 
         const reports = JSON.parse(fs.readFileSync(path));
@@ -45,6 +45,6 @@ module.exports = {
         
         reports.push(newReport);
         fs.writeFileSync(path, JSON.stringify(reports, null, 2));
-        await sock.sendMessage(chatId, { text: `✅ Reporte enviado. ID: ${newReport.id}` });
+        await sock.sendMessage(chatId, { text: `✅ Report sent. ID: ${newReport.id}` });
     }
 };

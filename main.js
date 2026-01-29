@@ -1,63 +1,63 @@
 /**
- * PROCESADOR DE MENSAJES
- * Recibe los mensajes entrantes y ejecuta los comandos correspondientes
+ * MESSAGE PROCESSOR
+ * Receives incoming messages and executes corresponding commands
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const settings = require('./settings');
 const loader = require('./lib/loader');
 const isAdmin = require('./lib/isAdmin');
 
 /**
- * Maneja los mensajes entrantes
- * Extrae comandos, parámetros y ejecuta el comando correspondiente
+ * Handles incoming messages
+ * Extracts commands, parameters and executes the corresponding command
  * 
- * @param {object} sock - Socket de conexión de Baileys
- * @param {object} chatUpdate - Objeto de actualización del chat
+ * @param {object} sock - Baileys connection socket
+ * @param {object} chatUpdate - Chat update object
  */
 async function handleMessages(sock, chatUpdate) {
     try {
-        // Obtener el mensaje
+        // Get the message
         const m = chatUpdate.messages[0];
         if (!m.message || m.key.fromMe) return;
 
-        // ===== EXTRACCIÓN DE DATOS DEL MENSAJE =====
+        // ===== MESSAGE DATA EXTRACTION =====
         const chatId = m.key.remoteJid;
         const senderId = m.key.participant || m.key.remoteJid;
         const body = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "";
         
-        // Verificar si el mensaje comienza con el prefijo del comando
+        // Check if message starts with command prefix
         if (!body.startsWith(settings.prefix)) return;
 
-        // ===== PARSEO DEL COMANDO =====
+        // ===== COMMAND PARSING =====
         const commandName = body.slice(settings.prefix.length).trim().split(/\s+/)[0].toLowerCase();
         const args = body.trim().split(/\s+/).slice(1);
         const text = args.join(" ");
         
-        // ===== VERIFICACIÓN DE PERMISOS =====
+        // ===== PERMISSIONS VERIFICATION =====
         const senderIsOwner = senderId.includes(settings.ownerNumber);
         const { isSenderAdmin, isBotAdmin } = chatId.endsWith('@g.us') 
             ? await isAdmin(sock, chatId, senderId) 
             : { isSenderAdmin: false, isBotAdmin: false };
 
-        // ===== BÚSQUEDA Y EJECUCIÓN DEL COMANDO =====
+        // ===== COMMAND SEARCH AND EXECUTION =====
         const commands = loader.getCommands();
         const cmd = commands.get(commandName) || [...commands.values()].find(c => c.alias?.includes(commandName));
 
         if (cmd) {
             await cmd.execute(sock, chatId, m, { 
-                args,                           // Argumentos del comando
-                text,                           // Texto del comando
-                senderId,                       // ID del que envió el mensaje
-                senderIsOwner,                  // ¿Es el owner?
-                isSenderAdmin,                  // ¿Es admin del grupo?
-                isBotAdmin,                     // ¿El bot es admin?
-                commandName,                    // Nombre del comando ejecutado
-                settings                        // Configuración del bot
+                args,                           // Command arguments
+                text,                           // Command text
+                senderId,                       // ID of who sent the message
+                senderIsOwner,                  // Is the owner?
+                isSenderAdmin,                  // Is group admin?
+                isBotAdmin,                     // Is the bot admin?
+                commandName,                    // Name of executed command
+                settings                        // Bot configuration
             });
         }
     } catch (e) { 
-        console.error('Error al procesar mensaje:', e); 
+        console.error('Error processing message:', e); 
     }
 }
 

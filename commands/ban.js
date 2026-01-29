@@ -1,43 +1,43 @@
 /**
- * COMANDO: BAN/KICK
- * Expulsa a un miembro del grupo
+ * COMMAND: BAN/KICK
+ * Removes a member from the group
  */
 
 module.exports = {
     name: 'ban',
-    alias: ['kick', 'expulsar'],
+    alias: ['kick', 'remove'],
     async execute(sock, chatId, m, { isSenderAdmin, isBotAdmin }) {
         try {
-            // Verificar permisos
+            // Check permissions
             if (!isSenderAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesitas ser admin del grupo." });
+                return sock.sendMessage(chatId, { text: "❌ You need to be a group admin to use this command." });
             }
             
             if (!isBotAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesito ser admin del grupo." });
+                return sock.sendMessage(chatId, { text: "❌ I need to be a group admin." });
             }
 
-            // Obtener usuario a banear
+            // Get user to ban
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
             if (!quoted) {
-                return sock.sendMessage(chatId, { text: "❌ Responde al mensaje del usuario que quieres expulsar." });
+                return sock.sendMessage(chatId, { text: "❌ Reply to the user's message that you want to remove." });
             }
 
-            // Obtener ID del usuario
+            // Get user ID
             const userToBan = m.message.extendedTextMessage?.contextInfo?.participant;
             if (!userToBan) {
-                return sock.sendMessage(chatId, { text: "❌ No se pudo identificar al usuario." });
+                return sock.sendMessage(chatId, { text: "❌ Could not identify the user." });
             }
 
-            // Ejecutar ban
+            // Execute ban
             await sock.groupParticipantsUpdate(chatId, [userToBan], 'remove');
             await sock.sendMessage(chatId, { 
-                text: `✅ @${userToBan.split('@')[0]} ha sido expulsado del grupo.`,
+                text: `✅ @${userToBan.split('@')[0]} has been removed from the group.`,
                 mentions: [userToBan]
             });
         } catch (e) {
-            console.error('Error en comando ban:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al expulsar al usuario." });
+            console.error('Error in ban command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error removing the user." });
         }
     }
 };

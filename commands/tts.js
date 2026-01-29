@@ -1,30 +1,30 @@
 /**
- * COMANDO: TTS/DECIR/VOICE
- * Convierte texto a audio usando síntesis de voz de Google
+ * COMMAND: TTS/SAY/VOICE
+ * Converts text to audio using Google voice synthesis
  */
 
 module.exports = {
     name: 'tts',
-    alias: ['decir', 'voice', 'hablar'],
+    alias: ['say', 'voice', 'speak'],
     async execute(sock, chatId, m, { text }) {
         try {
-            // Validar que haya texto
+            // Validate that there is text
             if (!text) {
-                return sock.sendMessage(chatId, { text: "❌ Uso: .tts <texto a convertir>\n\nEj: .tts Hola mundo" });
+                return sock.sendMessage(chatId, { text: "❌ Usage: .tts <text to convert>\n\nEx: .tts Hello world" });
             }
             
-            // Generar URL de audio (Google Translate TTS)
-            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=es&client=tw-ob`;
+            // Generate audio URL (Google Translate TTS)
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
             
-            // Enviar audio como mensaje de voz
+            // Send audio as voice message
             await sock.sendMessage(chatId, { 
                 audio: { url: ttsUrl }, 
                 mimetype: 'audio/mp4', 
-                ptt: true  // PTT = Push To Talk (mensaje de voz)
+                ptt: true  // PTT = Push To Talk (voice message)
             }, { quoted: m });
         } catch (e) {
-            console.error('Error en comando tts:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al generar el audio." });
+            console.error('Error in tts command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error generating audio." });
         }
     }
 };

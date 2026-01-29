@@ -1,40 +1,40 @@
 /**
- * COMANDO: HELP/MENU
- * Muestra el menú de ayuda con todos los comandos disponibles
+ * COMMAND: HELP/MENU
+ * Shows the help menu with all available commands
  */
 
 module.exports = {
     name: 'help',
     alias: ['menu'],
     async execute(sock, chatId, m, { settings }) {
-        // Construir el menú de ayuda
+        // Build help menu
         const menu = `
 ╭──『 *${settings.botName}* 』──╮
 │
 ┝─『 *MULTIMEDIA* 』
-│ .s / .sticker ➜ Convertir a sticker
-│ .simage ➜ Convertir a imagen
+│ .s / .sticker ➜ Convert to sticker
+│ .simage ➜ Convert to image
 │
-┝─『 *HERRAMIENTAS* 』
-│ .trt <idioma> <texto> ➜ Traducir texto
-│ .tts <texto> ➜ Convertir a audio
-│ .report <motivo> ➜ Reportar al owner
+┝─『 *TOOLS* 』
+│ .trt <language> <text> ➜ Translate text
+│ .tts <text> ➜ Convert to audio
+│ .report <reason> ➜ Report to owner
 │
-┝─『 *GRUPOS* 』
-│ .ban / .kick ➜ Banear usuario
-│ .mute <minutos> ➜ Silenciar usuario
-│ .tagall ➜ Mencionar a todos
-│ .welcome <on/off/set> ➜ Bienvenidas automáticas
-│ .goodbye <on/off/set> ➜ Despedidas automáticas
-│ .giveaway <start/end> ➜ Crear sorteos
+┝─『 *GROUPS* 』
+│ .ban / .kick ➜ Ban user
+│ .mute <minutes> ➜ Mute user
+│ .tagall ➜ Mention everyone
+│ .welcome <on/off/set> ➜ Automatic greetings
+│ .goodbye <on/off/set> ➜ Automatic farewells
+│ .giveaway <start/end> ➜ Create giveaways
 │
-┝─『 *SISTEMA* 』
-│ .status ➜ Ver estado del bot
-│ .update ➜ Actualizar bot
-│ .reset ➜ Reiniciar bot
+┝─『 *SYSTEM* 』
+│ .status ➜ View bot status
+│ .update ➜ Update bot
+│ .reset ➜ Restart bot
 ╰──────────────────╯`.trim();
 
-        // Enviar el menú
+        // Send the menu
         await sock.sendMessage(chatId, { text: menu }, { quoted: m });
     }
 };

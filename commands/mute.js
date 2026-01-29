@@ -1,41 +1,41 @@
 /**
- * COMANDO: MUTE
- * Silencia el grupo permitiendo solo que admins envíen mensajes
+ * COMMAND: MUTE
+ * Silences the group allowing only admins to send messages
  */
 
 module.exports = {
     name: 'mute',
-    alias: ['silencio'],
+    alias: ['silence'],
     async execute(sock, chatId, m, { args, isSenderAdmin, isBotAdmin }) {
         try {
-            // Verificar permisos
+            // Check permissions
             if (!isSenderAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesitas ser admin del grupo." });
+                return sock.sendMessage(chatId, { text: "❌ You need to be a group admin." });
             }
             
             if (!isBotAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ Necesito ser admin del grupo." });
+                return sock.sendMessage(chatId, { text: "❌ I need to be a group admin." });
             }
 
-            // Obtener tiempo (en minutos)
-            const time = parseInt(args[0]) || 60; // 60 minutos por defecto
+            // Get time (in minutes)
+            const time = parseInt(args[0]) || 60; // 60 minutes by default
             
-            // Silenciar grupo (solo admins pueden hablar)
+            // Mute group (only admins can speak)
             await sock.groupSettingUpdate(chatId, 'announcement');
-            await sock.sendMessage(chatId, { text: `🔇 *Grupo silenciado* por ${time} minutos. Solo los admins pueden enviar mensajes.` });
+            await sock.sendMessage(chatId, { text: `🔇 *Group muted* for ${time} minutes. Only admins can send messages.` });
 
-            // Programar desmuteado automático
+            // Schedule auto-unmute
             setTimeout(async () => {
                 try {
                     await sock.groupSettingUpdate(chatId, 'not_announcement');
-                    await sock.sendMessage(chatId, { text: "🔊 *Grupo abierto.* Todos pueden enviar mensajes nuevamente." });
+                    await sock.sendMessage(chatId, { text: "🔊 *Group opened.* Everyone can send messages again." });
                 } catch (e) {
-                    console.error('Error al desmutear:', e);
+                    console.error('Error unmuting:', e);
                 }
             }, time * 60000);
         } catch (e) {
-            console.error('Error en comando mute:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al silenciar el grupo." });
+            console.error('Error in mute command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error muting the group." });
         }
     }
 };

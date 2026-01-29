@@ -1,9 +1,9 @@
 /**
- * COMANDO: SUDO
- * Gestiona administradores secundarios (sudos) que pueden ejecutar comandos del bot
+ * COMMAND: SUDO
+ * Manages secondary admins (sudos) who can execute bot commands
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const { addSudo, delSudo, isSudo, getSudos } = require('../lib/index');
 const fs = require('fs');
 
@@ -11,13 +11,13 @@ module.exports = {
     name: 'sudo',
     alias: ['owner', 'superuser'],
     async execute(sock, chatId, m, { args, text, senderIsOwner }) {
-        // Solo el Owner principal puede gestionar sudos
+        // Only the main owner can manage sudos
         if (!senderIsOwner) return;
 
         const action = args[0]?.toLowerCase();
         
-        // ===== OBTENER USUARIO =====
-        // Puede ser por mención, respuesta a un mensaje o número directo
+        // ===== GET USER =====
+        // Can be by mention, reply to message or direct number
         let user;
         if (m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]) {
             user = m.message.extendedTextMessage.contextInfo.mentionedJid[0];
@@ -27,31 +27,31 @@ module.exports = {
             user = args[1].replace(/[^0-9]/g, '') + '@s.whatsapp.net';
         }
 
-        // ===== PROCESAMIENTO DE ACCIONES =====
+        // ===== ACTION PROCESSING =====
         switch (action) {
             case 'add':
-                // Añadir un nuevo sudo
+                // Add new sudo
                 if (!user) {
                     return sock.sendMessage(chatId, { 
-                        text: "❌ Uso incorrecto\\n\\nOpciones:\\n1. Menciona: .sudo add @usuario\\n2. Responde: .sudo add (en respuesta)\\n3. Número: .sudo add 1234567890" 
+                        text: "❌ Incorrect usage\n\nOptions:\n1. Mention: .sudo add @user\n2. Reply: .sudo add (in reply)\n3. Number: .sudo add 1234567890" 
                     });
                 }
                 await addSudo(user);
                 await sock.sendMessage(chatId, { 
-                    text: `✅ @${user.split('@')[0]} ahora es un **SUDO** con permisos totales.`,
+                    text: `✅ @${user.split('@')[0]} is now a **SUDO** with full permissions.`,
                     mentions: [user] 
                 }, { quoted: m });
                 break;
 
             case 'del':
             case 'remove':
-                // Eliminar un sudo
+                // Remove a sudo
                 if (!user) {
-                    return sock.sendMessage(chatId, { text: "❌ Menciona a alguien para quitarle el sudo." });
+                    return sock.sendMessage(chatId, { text: "❌ Mention someone to remove their sudo status." });
                 }
                 await delSudo(user);
                 await sock.sendMessage(chatId, { 
-                    text: `🗑️ @${user.split('@')[0]} ha sido eliminado de la lista de SUDOS.`,
+                    text: `🗑️ @${user.split('@')[0]} has been removed from the SUDO list.`,
                     mentions: [user] 
                 }, { quoted: m });
                 break;
@@ -61,10 +61,10 @@ module.exports = {
                 const sudos = getSudos();
                 
                 if (sudos.length === 0) {
-                    return sock.sendMessage(chatId, { text: "📂 No hay SUDOS registrados aparte del Owner principal." });
+                    return sock.sendMessage(chatId, { text: "📂 No SUDOs registered besides the main owner." });
                 }
                 
-                let list = "⭐ *LISTA DE SUDOS ACTUALES*\n━━━━━━━━━━━━━━━━\n\n";
+                let list = "⭐ *CURRENT SUDO LIST*\n━━━━━━━━━━━━━━━━\n\n";
                 sudos.forEach((s, i) => {
                     list += `${i + 1}. @${s.split('@')[0]}\\n`;
                 });
@@ -75,7 +75,7 @@ module.exports = {
             default:
                 // Mostrar ayuda
                 await sock.sendMessage(chatId, { 
-                    text: "⌨️ *GESTIÓN DE SUDOS*\n\n.sudo add <@tag> ➜ Añadir sudo\\n.sudo del <@tag> ➜ Eliminar sudo\\n.sudo list ➜ Listar sudos" 
+                    text: "⌨️ *SUDO MANAGEMENT*\n\n.sudo add <@tag> ➜ Add sudo\n.sudo del <@tag> ➜ Remove sudo\n.sudo list ➜ List sudos" 
                 });
                 break;
         }

@@ -1,9 +1,9 @@
 /**
- * COMANDO: SIMAGE/TOIMG
- * Convierte stickers en imágenes PNG
+ * COMMAND: SIMAGE/TOIMG
+ * Converts stickers into PNG images
  */
 
-// ===== IMPORTACIONES =====
+// ===== IMPORTS =====
 const sharp = require('sharp');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const fs = require('fs');
@@ -13,33 +13,33 @@ module.exports = {
     alias: ['toimg'],
     async execute(sock, chatId, m) {
         try {
-            // Obtener el sticker respondido
+            // Get the replied sticker
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
             if (!quoted?.stickerMessage) {
-                return sock.sendMessage(chatId, { text: "❌ Responde a un sticker para convertir a imagen." });
+                return sock.sendMessage(chatId, { text: "❌ Reply to a sticker to convert to image." });
             }
 
-            // Descargar el sticker
+            // Download the sticker
             const buffer = await downloadMediaMessage({ message: quoted }, 'buffer', {});
             
-            // Crear carpeta temporal si no existe
+            // Create temp folder if it doesn't exist
             if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
             
-            // Convertir a PNG
+            // Convert to PNG
             const output = `./temp/conv_${Date.now()}.png`;
             await sharp(buffer).toFormat('png').toFile(output);
             
-            // Enviar imagen
+            // Send image
             await sock.sendMessage(chatId, { 
                 image: fs.readFileSync(output), 
-                caption: "✅ Sticker convertido a imagen." 
+                caption: "✅ Sticker converted to image." 
             }, { quoted: m });
             
-            // Eliminar archivo temporal
+            // Delete temporary file
             fs.unlinkSync(output);
         } catch (e) {
-            console.error('Error en comando simage:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error al convertir el sticker." });
+            console.error('Error in simage command:', e);
+            await sock.sendMessage(chatId, { text: "❌ Error converting the sticker." });
         }
     }
 };
