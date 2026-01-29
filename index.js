@@ -15,6 +15,7 @@ const pino = require("pino");
 const chalk = require("chalk");
 const { handleMessages } = require('./main');
 const { getWelcome } = require('./lib/index');
+const stats = require('./lib/stats');
 const settings = require('./settings');
 
 // ===== MANTENER EL PROCESO ACTIVO =====
@@ -122,8 +123,9 @@ async function startBot() {
     /**
      * Evento: Cambios de conexión
      * Maneja desconexiones y reconexiones automáticas
+     * Envía notificación de conexión al newsletter
      */
-    sock.ev.on('connection.update', (u) => {
+    sock.ev.on('connection.update', async (u) => {
         const { connection, lastDisconnect } = u;
         
         if (connection === 'close') {
@@ -139,6 +141,47 @@ async function startBot() {
             }
         } else if (connection === 'open') {
             console.log(chalk.green.bold('✅ PRISMBOT CONECTADO CORRECTAMENTE'));
+            
+            // Enviar mensaje al newsletter
+            try {
+                const botStats = stats.get();
+                const uptime = process.uptime();
+                
+                const bootMessage = `
+╔════════════════════════════════════════════╗
+║     🤖 ${settings.botName} - ARRANCÓ EXITOSAMENTE 🚀    ║
+╚════════════════════════════════════════════╝
+
+⏰ HORA DE INICIO: ${new Date().toLocaleString('es-ES')}
+
+📊 ESTADÍSTICAS DEL BOT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ Estado: OPERACIONAL
+  🟢 Conexión: ACTIVA
+  📱 Versión: ${settings.version}
+  👨‍💼 Owner: @${settings.ownerNumber}
+  📝 Comandos: ${botStats.commands || 0}
+  👥 Grupos: ${botStats.groups?.length || 0}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 El bot está listo para recibir órdenes
+   Escribe .help para ver los comandos
+
+🔧 Autor: ${settings.author}
+🏠 Repositorio: ${settings.github.repo}
+
+═════════════════════════════════════════════
+      ¡BOT LISTO PARA DOMINAR EL MUNDO! 🌍
+═════════════════════════════════════════════
+`.trim();
+
+                // Enviar al newsletter
+                await sock.sendMessage(settings.newsletter.jid, { 
+                    text: bootMessage
+                });
+            } catch (e) {
+                console.error('Error al enviar mensaje de boot al newsletter:', e);
+            }
         }
     });
 
