@@ -1,11 +1,20 @@
 {
   "name": "prismbot-v2",
   "version": "2.0.0",
-  "description": "WhatsApp Bot Optimized",
+  "description": "Bot de WhatsApp optimizado con sistema de comandos modular",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node index.js"
   },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "baileys",
+    "prismbot"
+  ],
+  "author": "PRISM GEN",
+  "license": "MIT",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.9",
     "@hapi/boom": "^10.0.1",
