@@ -7,6 +7,7 @@
 const settings = require('./settings');
 const loader = require('./lib/loader');
 const isAdmin = require('./lib/isAdmin');
+const stats = require('./lib/stats');
 
 /**
  * Handles incoming messages
@@ -45,6 +46,9 @@ async function handleMessages(sock, chatUpdate) {
         const cmd = commands.get(commandName) || [...commands.values()].find(c => c.alias?.includes(commandName));
 
         if (cmd) {
+            // Register command execution in statistics
+            stats.register(chatId, chatId.endsWith('@g.us'));
+            
             await cmd.execute(sock, chatId, m, { 
                 args,                           // Command arguments
                 text,                           // Command text
