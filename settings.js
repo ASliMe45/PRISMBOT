@@ -10,6 +10,6 @@ module.exports = {
     newsletter: {
         enabled: true,
         jid: '120363425540907918@newsletter',
-        name: 'PRISM BOT'
+        name: 'PRISMBOT SYSTEM'
     }
 };
