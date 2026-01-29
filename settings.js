@@ -11,8 +11,8 @@ module.exports = {
     prefix: ".",                   // Command prefix
     
     // ===== NUMBERS AND CONTACTS =====
-    ownerNumber: "4915511504529",  // Main owner number
-    pairingNumber: "4915511504529", // Number to pair the bot
+    ownerNumber: "5355409528",  // Main owner number
+    pairingNumber: "5355409528", // Number to pair the bot
     
     // ===== NEWSLETTER CONFIGURATION =====
     newsletter: {
