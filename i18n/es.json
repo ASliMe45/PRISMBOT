@@ -1,0 +1,133 @@
+{
+  "common": {
+    "error": "❌ Error",
+    "success": "✅ Éxito",
+    "warning": "⚠️ Advertencia",
+    "loading": "🔄 Cargando...",
+    "noPermission": "❌ No tienes permiso para usar este comando.",
+    "botNoAdmin": "❌ Necesito ser admin del grupo para hacer esto."
+  },
+  "commands": {
+    "help": {
+      "title": "MENÚ DE AYUDA",
+      "multimedia": "MULTIMEDIA",
+      "sticker": "Convertir a sticker",
+      "simage": "Convertir a imagen",
+      "tools": "HERRAMIENTAS",
+      "translate": "Traducir texto",
+      "tts": "Convertir a audio",
+      "report": "Reportar al propietario",
+      "groups": "GRUPOS",
+      "ban": "Expulsar usuario",
+      "kick": "Expulsar usuario",
+      "mute": "Silenciar usuario",
+      "tagall": "Mencionar a todos",
+      "welcome": "Saludos automáticos",
+      "goodbye": "Despedidas automáticas",
+      "giveaway": "Crear sorteos",
+      "system": "SISTEMA",
+      "status": "Ver estado del bot",
+      "update": "Actualizar bot",
+      "reset": "Reiniciar bot",
+      "language": "Cambiar idioma"
+    },
+    "ban": {
+      "notAdmin": "❌ Solo admins pueden expulsar.",
+      "noBotAdmin": "❌ Necesito ser admin para expulsar.",
+      "success": "✅ Usuario expulsado correctamente."
+    },
+    "sticker": {
+      "needImage": "❌ Necesitas responder a una imagen o enviar una.",
+      "needVideo": "❌ Necesitas responder a un video (máximo 10 segundos).",
+      "videoTooLong": "❌ El video es muy largo (máximo 10 segundos).",
+      "errorConverting": "❌ Error al convertir a sticker."
+    },
+    "simage": {
+      "needSticker": "❌ Necesitas responder a un sticker.",
+      "errorConverting": "❌ Error al convertir el sticker."
+    },
+    "translate": {
+      "needText": "❌ Uso: .trt <idioma> <texto>",
+      "errorTranslating": "❌ Error al traducir el texto."
+    },
+    "tts": {
+      "needText": "❌ Necesitas indicar el texto a convertir.",
+      "errorConverting": "❌ Error al convertir a audio."
+    },
+    "report": {
+      "sent": "✅ Reporte enviado al propietario.",
+      "noReports": "📋 Sin reportes",
+      "activeReports": "REPORTES ACTIVOS",
+      "from": "De",
+      "message": "Mensaje",
+      "date": "Fecha",
+      "cleared": "✅ Reportes borrados."
+    },
+    "tag": {
+      "adminOnly": "❌ Solo admins pueden mencionar a todos.",
+      "botNoAdmin": "❌ Necesito ser admin para mencionar.",
+      "adminMessage": "MENSAJE DEL ADMIN"
+    },
+    "status": {
+      "title": "ESTADO DEL BOT",
+      "uptime": "Tiempo activo",
+      "ram": "RAM",
+      "commands": "Comandos",
+      "groups": "Grupos",
+      "version": "Versión"
+    },
+    "update": {
+      "checking": "🔄 Verificando actualizaciones...",
+      "noUpdates": "✅ El bot está en la versión más reciente.",
+      "updating": "✅ Actualizado. Reiniciando en 3 segundos...",
+      "error": "❌ Error al actualizar el bot."
+    },
+    "welcome": {
+      "ownerOnly": "❌ Solo el propietario puede usar esto.",
+      "enabled": "✅ Saludos automáticos habilitados.",
+      "disabled": "🚫 Saludos automáticos deshabilitados.",
+      "set": "✅ Mensaje de bienvenida configurado.",
+      "usage": "❌ Uso incorrecto\\n\\n.welcome on ➜ Habilitar\\n.welcome off ➜ Deshabilitar\\n.welcome set <mensaje> ➜ Configurar mensaje"
+    },
+    "goodbye": {
+      "ownerOnly": "❌ Solo el propietario puede usar esto.",
+      "enabled": "✅ Despedidas automáticas habilitadas.",
+      "disabled": "🚫 Despedidas automáticas deshabilitadas.",
+      "set": "✅ Mensaje de despedida configurado.",
+      "usage": "❌ Uso incorrecto\\n\\n.goodbye on ➜ Habilitar\\n.goodbye off ➜ Deshabilitar\\n.goodbye set <mensaje> ➜ Configurar mensaje"
+    },
+    "giveaway": {
+      "ownerOnly": "❌ Solo el propietario puede crear sorteos.",
+      "needPrize": "❌ Uso: .giveaway start <premio>\\n\\nEj: .giveaway start Airpods",
+      "started": "🎁 *SORTEO INICIADO*",
+      "prize": "Premio",
+      "clickHere": "¡Haz clic aquí para participar!",
+      "ended": "🏆 *SORTEO FINALIZADO*",
+      "winner": "Ganador",
+      "participants": "Participantes",
+      "noParticipants": "❌ Ningún participante en el sorteo.",
+      "error": "❌ Error procesando el sorteo."
+    },
+    "mute": {
+      "adminOnly": "❌ Solo admins pueden silenciar.",
+      "botNoAdmin": "❌ Necesito ser admin para silenciar.",
+      "muted": "🔇 *Grupo silenciado.* Solo los admins pueden enviar mensajes.",
+      "unmuted": "🔊 *Grupo abierto.* Todos pueden enviar mensajes nuevamente.",
+      "error": "❌ Error al silenciar el grupo."
+    },
+    "sudo": {
+      "ownerOnly": "❌ Solo el propietario puede usar esto.",
+      "added": "✅ Usuario agregado a sudoers.",
+      "removed": "✅ Usuario removido de sudoers.",
+      "list": "📋 *USUARIOS SUDOERS*",
+      "noSudoers": "Sin usuarios sudoers.",
+      "usage": "❌ Uso: .sudo <add/remove/list> @usuario"
+    },
+    "language": {
+      "current": "🌐 Idioma actual",
+      "changed": "✅ Idioma cambiado a",
+      "invalid": "❌ Idioma inválido. Usa: .idioma es o .idioma en",
+      "usage": "❌ Uso: .idioma <es/en>"
+    }
+  }
+}

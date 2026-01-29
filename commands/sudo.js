@@ -10,7 +10,7 @@ const fs = require('fs');
 module.exports = {
     name: 'sudo',
     alias: ['owner', 'superuser'],
-    async execute(sock, chatId, m, { args, text, senderIsOwner }) {
+    async execute(sock, chatId, m, { args, text, senderIsOwner, t }) {
         // Only the main owner can manage sudos
         if (!senderIsOwner) return;
 
@@ -33,12 +33,12 @@ module.exports = {
                 // Add new sudo
                 if (!user) {
                     return sock.sendMessage(chatId, { 
-                        text: "❌ Incorrect usage\n\nOptions:\n1. Mention: .sudo add @user\n2. Reply: .sudo add (in reply)\n3. Number: .sudo add 1234567890" 
+                        text: t('commands.sudo.usage')
                     });
                 }
                 await addSudo(user);
                 await sock.sendMessage(chatId, { 
-                    text: `✅ @${user.split('@')[0]} is now a **SUDO** with full permissions.`,
+                    text: t('commands.sudo.added', { user: user.split('@')[0] }),
                     mentions: [user] 
                 }, { quoted: m });
                 break;
@@ -47,7 +47,7 @@ module.exports = {
             case 'remove':
                 // Remove a sudo
                 if (!user) {
-                    return sock.sendMessage(chatId, { text: "❌ Mention someone to remove their sudo status." });
+                    return sock.sendMessage(chatId, { text: t('commands.sudo.removed') });
                 }
                 await delSudo(user);
                 await sock.sendMessage(chatId, { 
@@ -57,14 +57,14 @@ module.exports = {
                 break;
 
             case 'list':
-                // Listar todos los sudos
+                // List all sudos
                 const sudos = getSudos();
                 
                 if (sudos.length === 0) {
-                    return sock.sendMessage(chatId, { text: "📂 No SUDOs registered besides the main owner." });
+                    return sock.sendMessage(chatId, { text: t('commands.sudo.noSudoers') });
                 }
                 
-                let list = "⭐ *CURRENT SUDO LIST*\n━━━━━━━━━━━━━━━━\n\n";
+                let list = t('commands.sudo.list') + "\n━━━━━━━━━━━━━━━━\n\n";
                 sudos.forEach((s, i) => {
                     list += `${i + 1}. @${s.split('@')[0]}\\n`;
                 });
@@ -73,7 +73,7 @@ module.exports = {
                 break;
 
             default:
-                // Mostrar ayuda
+                // Show help
                 await sock.sendMessage(chatId, { 
                     text: "⌨️ *SUDO MANAGEMENT*\n\n.sudo add <@tag> ➜ Add sudo\n.sudo del <@tag> ➜ Remove sudo\n.sudo list ➜ List sudos" 
                 });

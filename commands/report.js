@@ -10,7 +10,7 @@ const path = './data/reports.json';
 module.exports = {
     name: 'report',
     alias: ['reportissue'],
-    async execute(sock, chatId, m, { text, senderId, senderIsOwner, args }) {
+    async execute(sock, chatId, m, { text, senderId, senderIsOwner, args, t }) {
         // Create folder and file if they don't exist
         if (!fs.existsSync('./data')) fs.mkdirSync('./data');
         if (!fs.existsSync(path)) fs.writeFileSync(path, JSON.stringify([]));
@@ -20,10 +20,10 @@ module.exports = {
             const reports = JSON.parse(fs.readFileSync(path));
             
             if (reports.length === 0) {
-                return sock.sendMessage(chatId, { text: "📋 No reports" });
+                return sock.sendMessage(chatId, { text: t('commands.report.noReports') });
             }
             
-            let txt = "🚩 *ACTIVE REPORTS*\n━━━━━━━━━━━━━━━━\n\n";
+            let txt = t('commands.report.activeReports') + "\n━━━━━━━━━━━━━━━━\n\n";
             reports.forEach(r => {
                 txt += `📌 ID: ${r.id}\n👤 From: @${r.from.split('@')[0]}\n💬 Message: ${r.issue}\n🕐 Date: ${r.date}\n───────────────\n\n`;
             });
@@ -32,7 +32,7 @@ module.exports = {
 
         // ===== CREATE NEW REPORT =====
         if (!text) {
-            return sock.sendMessage(chatId, { text: "❌ Usage: .report <your report message>" });
+            return sock.sendMessage(chatId, { text: t('commands.report.usage') });
         }
 
         const reports = JSON.parse(fs.readFileSync(path));
@@ -45,6 +45,6 @@ module.exports = {
         
         reports.push(newReport);
         fs.writeFileSync(path, JSON.stringify(reports, null, 2));
-        await sock.sendMessage(chatId, { text: `✅ Report sent. ID: ${newReport.id}` });
+        await sock.sendMessage(chatId, { text: t('commands.report.sent', { id: newReport.id }) });
     }
 };

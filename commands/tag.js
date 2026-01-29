@@ -6,15 +6,15 @@
 module.exports = {
     name: 'tagall',
     alias: ['everyone', 'tag'],
-    async execute(sock, chatId, m, { text, isSenderAdmin, isBotAdmin }) {
+    async execute(sock, chatId, m, { text, isSenderAdmin, isBotAdmin, t }) {
         try {
             // Check permissions
             if (!isSenderAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ You need to be a group admin to use this command." });
+                return sock.sendMessage(chatId, { text: t('commands.tag.adminOnly') });
             }
             
             if (!isBotAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ I need to be a group admin to mention everyone." });
+                return sock.sendMessage(chatId, { text: t('commands.tag.botNoAdmin') });
             }
 
             // Get group metadata

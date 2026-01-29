@@ -9,12 +9,12 @@ const axios = require('axios');
 module.exports = {
     name: 'trt',
     alias: ['translate', 'trans'],
-    async execute(sock, chatId, m, { args }) {
+    async execute(sock, chatId, m, { args, t }) {
         try {
             // Validate arguments
             if (args.length < 2) {
                 return sock.sendMessage(chatId, { 
-                    text: "❌ Usage: .trt <language> <text>\n\nExamples:\n.trt en Hello\n.trt es Hola\n.trt fr Bonjour" 
+                    text: t('commands.translate.needText')
                 });
             }
             
@@ -35,7 +35,7 @@ module.exports = {
             }, { quoted: m });
         } catch (e) {
             console.error('Error in translate command:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error translating the text." });
+            await sock.sendMessage(chatId, { text: t('commands.translate.errorTranslating') });
         }
     }
 };

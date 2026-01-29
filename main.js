@@ -8,6 +8,8 @@ const settings = require('./settings');
 const loader = require('./lib/loader');
 const isAdmin = require('./lib/isAdmin');
 const stats = require('./lib/stats');
+const { getLanguage } = require('./lib/index');
+const { t } = require('./translations');
 
 /**
  * Handles incoming messages
@@ -49,6 +51,12 @@ async function handleMessages(sock, chatUpdate) {
             // Register command execution in statistics
             stats.register(chatId, chatId.endsWith('@g.us'));
             
+            // Get group language
+            const lang = getLanguage(chatId);
+            
+            // Create translation function for this group
+            const translate = (key, defaultValue) => t(lang, key, defaultValue);
+            
             await cmd.execute(sock, chatId, m, { 
                 args,                           // Command arguments
                 text,                           // Command text
@@ -57,7 +65,8 @@ async function handleMessages(sock, chatUpdate) {
                 isSenderAdmin,                  // Is group admin?
                 isBotAdmin,                     // Is the bot admin?
                 commandName,                    // Name of executed command
-                settings                        // Bot configuration
+                settings,                       // Bot configuration
+                t: translate                    // Translation function
             });
         }
     } catch (e) { 

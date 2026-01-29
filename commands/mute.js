@@ -6,15 +6,15 @@
 module.exports = {
     name: 'mute',
     alias: ['silence'],
-    async execute(sock, chatId, m, { args, isSenderAdmin, isBotAdmin }) {
+    async execute(sock, chatId, m, { args, isSenderAdmin, isBotAdmin, t }) {
         try {
             // Check permissions
             if (!isSenderAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ You need to be a group admin." });
+                return sock.sendMessage(chatId, { text: t('commands.mute.adminOnly') });
             }
             
             if (!isBotAdmin) {
-                return sock.sendMessage(chatId, { text: "❌ I need to be a group admin." });
+                return sock.sendMessage(chatId, { text: t('commands.mute.botNoAdmin') });
             }
 
             // Get time (in minutes)
@@ -22,13 +22,13 @@ module.exports = {
             
             // Mute group (only admins can speak)
             await sock.groupSettingUpdate(chatId, 'announcement');
-            await sock.sendMessage(chatId, { text: `🔇 *Group muted* for ${time} minutes. Only admins can send messages.` });
+            await sock.sendMessage(chatId, { text: t('commands.mute.muted', { time }) });
 
             // Schedule auto-unmute
             setTimeout(async () => {
                 try {
                     await sock.groupSettingUpdate(chatId, 'not_announcement');
-                    await sock.sendMessage(chatId, { text: "🔊 *Group opened.* Everyone can send messages again." });
+                    await sock.sendMessage(chatId, { text: t('commands.mute.unmuted') });
                 } catch (e) {
                     console.error('Error unmuting:', e);
                 }

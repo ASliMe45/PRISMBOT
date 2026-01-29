@@ -10,7 +10,7 @@ const stats = require('../lib/stats');
 module.exports = {
     name: 'status',
     alias: ['info', 'botstat'],
-    async execute(sock, chatId, m, { settings }) {
+    async execute(sock, chatId, m, { settings, t }) {
         // Get statistics
         const dataStats = stats.get();
         const uptime = process.uptime();
@@ -18,13 +18,13 @@ module.exports = {
 
         // Build status message
         const statusText = `
-🤖 *STATUS OF ${settings.botName}*
+🤖 *${t('commands.status.title').toUpperCase()} ${settings.botName}*
 ━━━━━━━━━━━━━━━━
-🚀 Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m
-💾 RAM: ${ram} MB
-📊 Commands: ${dataStats.commands || 0}
-👥 Groups: ${dataStats.groups?.length || 0}
-📡 Version: ${settings.version}
+🚀 ${t('commands.status.uptime')}: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m
+💾 ${t('commands.status.ram')}: ${ram} MB
+📊 ${t('commands.status.commands')}: ${dataStats.commands || 0}
+👥 ${t('commands.status.groups')}: ${dataStats.groups?.length || 0}
+📡 ${t('commands.status.version')}: ${settings.version}
 ━━━━━━━━━━━━━━━━
 `.trim();
 
