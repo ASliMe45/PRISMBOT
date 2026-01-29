@@ -45,7 +45,8 @@ module.exports = {
 
         } catch (e) {
             console.error('Error in mute command:', e);
-            await sock.sendMessage(chatId, { text: "❌ Error: Failed to mute the group." });
+            await sock.sendMessage(chatId, { text: "❌ *Error: Failed to mute the group*." });
         }
     }
 };
+
