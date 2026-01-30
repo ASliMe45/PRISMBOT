@@ -240,7 +240,8 @@ const QRCode = require('qrcode');
 
                 // Show QR in terminal (ASCII) and raw text only
                 try {
-                    const ascii = await QRCode.toString(u.qr, { type: 'terminal' });
+                    // Smaller ASCII QR for easier scanning on mobile devices
+                    const ascii = await QRCode.toString(u.qr, { type: 'terminal', small: true });
                     console.log(chalk.cyan('\nPAIRING QR (scan this with WhatsApp -> Link a device):\n'));
                     console.log(ascii);
                 } catch (e) {
