@@ -38,7 +38,7 @@ async function handleMessages(sock, chatUpdate) {
         const text = args.join(" ");
         
         // ===== PERMISSIONS VERIFICATION =====
-        const senderIsOwner = senderId.includes(settings.ownerNumber);
+        const senderIsOwner = senderId.split('@')[0] === settings.ownerNumber.replace(/[^0-9]/g, '');
         const { isSenderAdmin, isBotAdmin } = chatId.endsWith('@g.us') 
             ? await isAdmin(sock, chatId, senderId) 
             : { isSenderAdmin: false, isBotAdmin: false };

@@ -23,7 +23,7 @@ module.exports = {
     
     // ===== GITHUB CONFIGURATION (UPDATES) =====
     github: {
-        repo: 'https://github.com/ASliMe45/PRISMBOT',      // Repository URL
+        repo: 'https://github.com/ASliMe45/PRISMBOT.git',      // Repository URL
         branch: 'main'                                      // Default branch
     },
     
