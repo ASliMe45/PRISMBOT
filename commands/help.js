@@ -9,29 +9,29 @@ module.exports = {
     async execute(sock, chatId, m, { settings }) {
         // Build help menu
         const menu = `
-*${settings.botName}*
+*${settings.botName} MENU*
 
 *MULTIMEDIA:*
-.s / .sticker ➜ Convert to sticker
-.simage ➜ Convert to image
+.s / .sticker 
+.simage
 
 *TOOLS:*
-.trt <language> <text> ➜ Translate text
-.tts <text> ➜ Convert to audio
-.report <reason> ➜ Report to owner
+.trt <language> <text>
+.tts <text>
+.report <reason>
 
 *GROUPS:*
-.ban / .kick ➜ Ban user
-.mute <minutes> ➜ Mute user
-.tagall ➜ Mention everyone
-.welcome <on/off/set> ➜ Automatic greetings
-.goodbye <on/off/set> ➜ Automatic farewells
-.giveaway <start/end> ➜ Create giveaways
+.ban / .kick
+.mute <minutes>
+.tagall
+.welcome <on/off/set>
+.goodbye <on/off/set>
+.giveaway <start/end>
 
-*SYSTEM:*
-.status ➜ View bot status
-.update ➜ Update bot
-.reset ➜ Restart bot
+*SYSTEM / ONLY OWNER:*
+.status
+.update
+.reset
 
 `.trim();
 
