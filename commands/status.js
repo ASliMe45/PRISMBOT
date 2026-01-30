@@ -19,13 +19,12 @@ module.exports = {
         // Build status message
         const statusText = `
 🤖 *${t('commands.status.title').toUpperCase()} ${settings.botName}*
-━━━━━━━━━━━━━━━━
+
 🚀 ${t('commands.status.uptime')}: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m
 💾 ${t('commands.status.ram')}: ${ram} MB
 📊 ${t('commands.status.commands')}: ${dataStats.commands || 0}
 👥 ${t('commands.status.groups')}: ${dataStats.groups?.length || 0}
 📡 ${t('commands.status.version')}: ${settings.version}
-━━━━━━━━━━━━━━━━
 `.trim();
 
         // Send status
