@@ -148,31 +148,27 @@ async function startBot() {
                 const uptime = process.uptime();
                 
                 const bootMessage = `
-╔════════════════════════════════════════════╗
-║     🤖 ${settings.botName} - SUCCESSFULLY BOOTED 🚀     ║
-╚════════════════════════════════════════════╝
+*🤖 ${settings.botName} - SUCCESSFULLY BOOTED 🚀*
 
-⏰ BOOT TIME: ${new Date().toLocaleString('en-US')}
+*⏰ BOOT TIME:* ${new Date().toLocaleString('en-US')}
 
-📊 BOT STATISTICS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ✅ Status: OPERATIONAL
-  🟢 Connection: ACTIVE
-  📱 Version: ${settings.version}
-  👨‍💼 Owner: @${settings.ownerNumber}
-  📝 Commands: ${botStats.commands || 0}
-  👥 Groups: ${botStats.groups?.length || 0}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*📊 BOT STATISTICS:*
+
+  *✅ Status:* OPERATIONAL
+  *🟢 Connection:* ACTIVE
+  *📱 Version:* ${settings.version}
+  *👨‍💼 Owner:* @${settings.ownerNumber}
+  *📝 Commands:* ${botStats.commands || 0}
+  *👥 Groups:* ${botStats.groups?.length || 0}
+
 
 💬 The bot is ready to receive commands
    Type .help to see available commands
 
-🔧 Author: ${settings.author}
-🏠 Repository: ${settings.github.repo}
+*🔧 Author:* ${settings.author}
+*🏠 Repository:* ${settings.github.repo}
 
-═════════════════════════════════════════════
-       BOT READY TO DOMINATE THE WORLD! 🌍
-═════════════════════════════════════════════
+       *BOT READY TO DOMINATE THE WORLD! 🌍*
 `.trim();
 
                 // Send to newsletter
