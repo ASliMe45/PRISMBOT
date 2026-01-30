@@ -54,8 +54,10 @@ const QRCode = require('qrcode');
     let pairingInterval = null;
     let pairingSafety = null;
     let lastPairing = null;
+    let pairingBlocked = false; // set to true when session is logged out (stop further pairing attempts)
 
     const requestPairing = async () => {
+        if (pairingBlocked) { console.log(chalk.red('⛔ Pairing blocked due to logged out session. Remove ./session and restart to pair.')); return; }
         if (sock.authState.creds.registered) return;
         const phoneNumber = settings.pairingNumber.replace(/[^0-9]/g, '');
         console.log(chalk.cyan(`🔹 Attempting to generate pairing code for: ${phoneNumber}`));
@@ -80,7 +82,10 @@ const QRCode = require('qrcode');
             // Setup periodic re-request of pairing code (every 2 minutes) until registered
             if (pairingInterval) clearInterval(pairingInterval);
             pairingInterval = setInterval(async () => {
+                if (pairingBlocked) { console.log(chalk.red('⛔ Pairing blocked; skipping re-request.')); return; }
                 if (sock.authState.creds.registered) { clearInterval(pairingInterval); pairingInterval = null; return; }
+                // Only attempt if socket WebSocket is open
+                if (!sock?.ws || sock.ws.readyState !== 1) { console.log(chalk.yellow('⚠️ Socket not ready; skipping pairing re-request.')); return; }
                 try {
                     const r = await sock.requestPairingCode(phoneNumber);
                     let c = typeof r === 'string' ? r : (r.code || r.pin || JSON.stringify(r));
@@ -177,16 +182,23 @@ const QRCode = require('qrcode');
         const { connection, lastDisconnect } = u;
         
         if (connection === 'close') {
-            const reason = lastDisconnect?.error?.output?.statusCode;
-            console.log(chalk.red(`⚠️ Connection closed. Reason: ${reason}`));
+            // Provide detailed disconnect info
+            const err = lastDisconnect?.error || lastDisconnect;
+            const reason = err?.output?.statusCode || err?.statusCode || err?.name || err;
+            console.log(chalk.red('⚠️ Connection closed. Reason detail:'), err || reason);
             
-            // Retry connection if it was not a voluntary logout
-            if (reason !== DisconnectReason.loggedOut) {
-                console.log(chalk.yellow('🔄 Reconnecting in 5 seconds...'));
-                setTimeout(() => startBot(), 5000);
-            } else {
+            // If the session was logged out (401), stop pairing attempts and instruct the user
+            if (reason === DisconnectReason.loggedOut || reason === 401) {
                 console.log(chalk.red('❌ Session closed. Delete ./session to connect again.'));
+                pairingBlocked = true;
+                try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
+                try { if (pairingSafety) { clearInterval(pairingSafety); pairingSafety = null; } } catch (e) {}
+                return; // do not attempt to reconnect automatically
             }
+
+            // Retry connection for other reasons
+            console.log(chalk.yellow('🔄 Reconnecting in 5 seconds...'));
+            setTimeout(() => startBot(), 5000);
         } else if (connection === 'open') {
             console.log(chalk.green.bold('✅ PRISMBOT CONNECTED SUCCESSFULLY'));
             
