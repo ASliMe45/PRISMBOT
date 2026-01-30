@@ -236,9 +236,15 @@ async function restartProcess(sock, chatId, message) {
  * Main update command
  */
 async function updateCommand(sock, chatId, message) {
-    const senderIsOwner = message.key.fromMe || 
-        (message.key.participant || message.key.remoteJid).split('@')[0] === 
-        settings.ownerNumber.replace(/[^0-9]/g, '');
+    // Extract sender ID correctly
+    const senderId = message.key.participant || message.key.remoteJid;
+    const senderNumber = senderId.split('@')[0];
+    const ownerNumber = settings.ownerNumber.replace(/[^0-9]/g, '');
+    
+    // Check if sender is owner
+    const senderIsOwner = message.key.fromMe || senderNumber === ownerNumber;
+    
+    console.log(`[UPDATE] Command attempted by: ${senderNumber}, Owner: ${ownerNumber}, IsOwner: ${senderIsOwner}`);
 
     if (!senderIsOwner) {
         await sock.sendMessage(chatId, { text: '❌ Only bot owner can use .update' }, { quoted: message });
