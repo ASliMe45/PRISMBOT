@@ -73,10 +73,14 @@ const QRCode = require('qrcode');
     let pairingBackoffAttempts = 0;
 
     const schedulePairingRetry = (reason) => {
+        if (pairingBlocked) { console.log(chalk.yellow('⏱️ Pairing blocked; not scheduling pairing retry.')); return; }
         pairingBackoffAttempts = Math.min(pairingBackoffAttempts + 1, 6); // cap
         const delay = Math.min(10 * 60 * 1000, 30 * 1000 * Math.pow(2, pairingBackoffAttempts - 1)); // 30s,60s,120s,... cap 10m
         console.log(chalk.yellow(`⏱️ Scheduling pairing retry in ${Math.round(delay/1000)}s (attempt ${pairingBackoffAttempts})${reason ? ' - ' + reason : ''}`));
-        setTimeout(requestPairing, delay);
+        setTimeout(() => {
+            if (pairingBlocked) { console.log(chalk.yellow('⏱️ Pairing blocked; skipping scheduled pairing retry.')); return; }
+            requestPairing();
+        }, delay);
     }
 
     const requestPairing = async () => {
@@ -210,11 +214,12 @@ const QRCode = require('qrcode');
         if (connection === 'close') {
             // Provide detailed disconnect info
             const err = lastDisconnect?.error || lastDisconnect;
-            const reason = err?.output?.statusCode || err?.statusCode || err?.name || err;
+            const rawStatus = err?.output?.statusCode || err?.statusCode || null;
+            const reason = err?.name || rawStatus || err;
             console.log(chalk.red('⚠️ Connection closed. Reason detail:'), err || reason);
             
             // If the session was logged out (401), stop pairing attempts and instruct the user
-            if (reason === DisconnectReason.loggedOut || reason === 401) {
+            if (rawStatus === 401 || reason === DisconnectReason.loggedOut) {
                 console.log(chalk.red('❌ Session closed. Delete ./session to connect again.'));
                 pairingBlocked = true;
                 try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
@@ -222,10 +227,19 @@ const QRCode = require('qrcode');
                 return; // do not attempt to reconnect automatically
             }
 
-            // Retry connection for other reasons
-            console.log(chalk.yellow('🔄 Reconnecting in 5 seconds...'));
-            setTimeout(() => startBot(), 5000);
+            // Handle server/stream errors with exponential backoff
+            if (rawStatus === 515 || rawStatus === 503 || (typeof rawStatus === 'number' && rawStatus >= 500)) {
+                console.log(chalk.yellow(`⚠️ Stream/server error (${rawStatus}). Scheduling reconnect with backoff.`));
+                scheduleReconnect();
+                return;
+            }
+
+            // For other transient failures, use exponential backoff instead of immediate retry
+            console.log(chalk.yellow('🔄 Connection closed, scheduling reconnect (backoff).'));
+            scheduleReconnect();
         } else if (connection === 'open') {
+            // Reset reconnect attempts on successful open
+            reconnectAttempts = 0;
             console.log(chalk.green.bold('✅ PRISMBOT CONNECTED SUCCESSFULLY'));
             
             // Stop pairing timers if any (safety)
