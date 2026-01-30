@@ -17,13 +17,25 @@ const { handleMessages } = require('./main');
 const { getWelcome } = require('./lib/index');
 const stats = require('./lib/stats');
 const settings = require('./settings');
+const fs = require('fs');
+const path = require('path');
 
 // ===== RECONNECTION / PAIRING BACKOFF =====
 let reconnectAttempts = 0;               // number of reconnect attempts
 let maxReconnectDelay = 300000;         // 5 minutes max
+let wasReconnecting = false;            // flag to detect whether open is from a reconnect
+
 function scheduleReconnect() {
-    const delay = Math.min(maxReconnectDelay, 5000 * Math.pow(2, reconnectAttempts));
+    wasReconnecting = true;
     reconnectAttempts = Math.min(reconnectAttempts + 1, 20);
+
+    // Base exponential backoff (5s, 10s, 20s, ...), cap to maxReconnectDelay
+    let delay = Math.min(maxReconnectDelay, 5000 * Math.pow(2, reconnectAttempts - 1));
+
+    // Add jitter ±25% to avoid thundering herd
+    const jitter = Math.floor((Math.random() - 0.5) * 0.5 * delay);
+    delay = Math.max(1000, delay + jitter);
+
     console.log(chalk.yellow(`🔁 Scheduling reconnect in ${Math.round(delay/1000)}s (attempt ${reconnectAttempts})`));
     setTimeout(() => {
         console.log(chalk.yellow('🔄 Reconnect attempt starting...'));
@@ -34,6 +46,24 @@ function scheduleReconnect() {
 // ===== KEEP PROCESS ACTIVE =====
 // Prevents Node.js from closing the process if there is no activity
 setInterval(() => {}, 1000 * 60 * 60);
+
+// ===== CONNECTION ERROR LOGGING =====
+function logConnectionError(err) {
+    try {
+        const logsDir = path.join(process.cwd(), 'logs');
+        if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+        const logPath = path.join(logsDir, 'connection-errors.log');
+        const payload = (err && err.output && err.output.payload) ? err.output.payload : err;
+        const entry = {
+            ts: new Date().toISOString(),
+            reason: payload,
+            raw: (err && err.stack) ? String(err.stack) : String(err)
+        };
+        fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
+    } catch (e) {
+        console.error('Failed writing connection log:', e);
+    }
+}
 
 /**
  * Starts the WhatsApp bot
@@ -214,6 +244,8 @@ const QRCode = require('qrcode');
         if (connection === 'close') {
             // Provide detailed disconnect info
             const err = lastDisconnect?.error || lastDisconnect;
+            // Persist the error locally for diagnosis
+            try { logConnectionError(err); } catch (e) { /* ignore logging failures */ }
             const rawStatus = err?.output?.statusCode || err?.statusCode || null;
             const reason = err?.name || rawStatus || err;
             console.log(chalk.red('⚠️ Connection closed. Reason detail:'), err || reason);
@@ -227,14 +259,15 @@ const QRCode = require('qrcode');
                 return; // do not attempt to reconnect automatically
             }
 
-            // Handle server/stream errors with exponential backoff
+            // Stream/server errors (503/515/5xx) -> escalate reconnect attempts and schedule backoff
             if (rawStatus === 515 || rawStatus === 503 || (typeof rawStatus === 'number' && rawStatus >= 500)) {
                 console.log(chalk.yellow(`⚠️ Stream/server error (${rawStatus}). Scheduling reconnect with backoff.`));
+                reconnectAttempts = Math.min(reconnectAttempts + 1, 20);
                 scheduleReconnect();
                 return;
             }
 
-            // For other transient failures, use exponential backoff instead of immediate retry
+            // Other transient reasons -> schedule reconnect with backoff
             console.log(chalk.yellow('🔄 Connection closed, scheduling reconnect (backoff).'));
             scheduleReconnect();
         } else if (connection === 'open') {
@@ -246,12 +279,13 @@ const QRCode = require('qrcode');
             try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
             try { if (pairingSafety) { clearInterval(pairingSafety); pairingSafety = null; } } catch (e) {}
 
-            // Send boot message to newsletter
+            // Send boot message to newsletter only on fresh boot (not every reconnect)
             try {
-                const botStats = stats.get();
-                const uptime = process.uptime();
-                
-                const bootMessage = `
+                if (!wasReconnecting) {
+                    const botStats = stats.get();
+                    const uptime = process.uptime();
+                    
+                    const bootMessage = `
 *🤖 ${settings.botName} - SUCCESSFULLY BOOTED 🚀*
 
 *⏰ BOOT TIME:* ${new Date().toLocaleString('en-US')}
@@ -274,13 +308,19 @@ const QRCode = require('qrcode');
 *BOT READY TO DOMINATE THE WORLD! 🌍*
 `.trim();
 
-                // Send to newsletter
-                await sock.sendMessage(settings.newsletter.jid, { 
-                    text: bootMessage
-                });
+                    // Send to newsletter
+                    await sock.sendMessage(settings.newsletter.jid, { 
+                        text: bootMessage
+                    });
+                } else {
+                    console.log(chalk.yellow('⚠️ Skipping newsletter boot message due to recent reconnect.'));
+                }
             } catch (e) {
                 console.error('Error sending boot message to newsletter:', e);
             }
+
+            // We're now open and handled, clear the reconnecting flag
+            wasReconnecting = false;
         }
 
         // If WhatsApp provides a QR payload, show it in the terminal only (ASCII + raw). Do NOT send anywhere.
