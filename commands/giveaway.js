@@ -9,7 +9,7 @@ let giveawayCache = {};
 module.exports = {
     name: 'giveaway',
     alias: ['raffle', 'contest'],
-    async execute(sock, chatId, m, { args, text, senderIsOwner, t }) {
+    async execute(sock, chatId, m, { args, text, senderIsOwner }) {
         try {
             // Only the owner can create raffles
             if (!senderIsOwner) return;
@@ -20,7 +20,7 @@ module.exports = {
             if (action === 'start') {
                 const prize = args.slice(1).join(" ");
                 if (!prize) {
-                    return sock.sendMessage(chatId, { text: t('commands.giveaway.needPrize') });
+                    return sock.sendMessage(chatId, { text: '❌ Usage: .giveaway start <prize>\n\nEx: .giveaway start Airpods' });
                 }
                 
                 // Save raffle in cache
@@ -31,14 +31,14 @@ module.exports = {
                 };
                 
                 await sock.sendMessage(chatId, { 
-                    text: t('commands.giveaway.started', { prize })
+                    text: `🎁 *GIVEAWAY STARTED*\n\n🎯 Prize: ${prize}`
                 });
 
             // ===== END RAFFLE =====
             } else if (action === 'end') {
                 // Check that there is an active raffle
                 if (!giveawayCache[chatId]) {
-                    return sock.sendMessage(chatId, { text: t('commands.giveaway.error') });
+                    return sock.sendMessage(chatId, { text: '❌ Error processing the giveaway.' });
                 }
                 
                 // Get group participants
@@ -46,7 +46,7 @@ module.exports = {
                 const participants = metadata.participants;
                 
                 if (participants.length === 0) {
-                    return sock.sendMessage(chatId, { text: t('commands.giveaway.noParticipants') });
+                    return sock.sendMessage(chatId, { text: '❌ No participants in the giveaway.' });
                 }
                 
                 // Select random winner
@@ -55,7 +55,7 @@ module.exports = {
                 
                 // Announce winner
                 await sock.sendMessage(chatId, { 
-                    text: t('commands.giveaway.ended', { winner: winner.id.split('@')[0], prize: prizeInfo.prize }),
+                    text: `🏆 *GIVEAWAY ENDED*\n\n🎉 Winner: @${winner.id.split('@')[0]}\n🎁 Prize: ${prizeInfo.prize}`,
                     mentions: [winner.id]
                 });
                 
@@ -69,7 +69,7 @@ module.exports = {
             }
         } catch (e) {
             console.error('Error in giveaway command:', e);
-            await sock.sendMessage(chatId, { text: t('commands.giveaway.error') });
+            await sock.sendMessage(chatId, { text: '❌ Error processing the giveaway.' });
         }
     }
 };

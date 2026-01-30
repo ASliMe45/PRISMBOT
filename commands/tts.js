@@ -6,11 +6,11 @@
 module.exports = {
     name: 'tts',
     alias: ['say', 'voice', 'speak'],
-    async execute(sock, chatId, m, { text, t }) {
+    async execute(sock, chatId, m, { text }) {
         try {
             // Validate that there is text
             if (!text) {
-                return sock.sendMessage(chatId, { text: t('commands.tts.needText') });
+                return sock.sendMessage(chatId, { text: '❌ You need to indicate the text to convert.' });
             }
             
             // Generate audio URL (Google Translate TTS)
@@ -24,7 +24,7 @@ module.exports = {
             }, { quoted: m });
         } catch (e) {
             console.error('Error in tts command:', e);
-            await sock.sendMessage(chatId, { text: t('commands.tts.errorConverting') });
+            await sock.sendMessage(chatId, { text: '❌ Error converting to audio.' });
         }
     }
 };

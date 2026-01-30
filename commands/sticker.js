@@ -11,12 +11,12 @@ const fs = require('fs');
 module.exports = {
     name: 'sticker',
     alias: ['s'],
-    async execute(sock, chatId, m, { t }) {
+    async execute(sock, chatId, m) {
         try {
             // Get multimedia file (image or video)
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage || m.message;
             if (!quoted.imageMessage && !quoted.videoMessage) {
-                return sock.sendMessage(chatId, { text: t('commands.sticker.needImage') });
+                return sock.sendMessage(chatId, { text: '❌ You need to reply to an image or send one.' });
             }
 
             // Download the file
@@ -26,7 +26,7 @@ module.exports = {
             await sock.sendMessage(chatId, { sticker: buffer }, { quoted: m });
         } catch (e) {
             console.error('Error in sticker command:', e);
-            await sock.sendMessage(chatId, { text: t('commands.sticker.errorConverting') });
+            await sock.sendMessage(chatId, { text: '❌ Error converting to sticker.' });
         }
     }
 };

@@ -11,12 +11,12 @@ const fs = require('fs');
 module.exports = {
     name: 'simage',
     alias: ['toimg'],
-    async execute(sock, chatId, m, { t }) {
+    async execute(sock, chatId, m) {
         try {
             // Get the replied sticker
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
             if (!quoted?.stickerMessage) {
-                return sock.sendMessage(chatId, { text: t('commands.simage.needSticker') });
+                return sock.sendMessage(chatId, { text: '❌ You need to reply to a sticker.' });
             }
 
             // Download the sticker
@@ -39,7 +39,7 @@ module.exports = {
             fs.unlinkSync(output);
         } catch (e) {
             console.error('Error in simage command:', e);
-            await sock.sendMessage(chatId, { text: t('commands.simage.errorConverting') });
+            await sock.sendMessage(chatId, { text: '❌ Error converting the sticker.' });
         }
     }
 };

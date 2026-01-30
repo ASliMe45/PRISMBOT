@@ -1,0 +1,158 @@
+/**
+ * ENGLISH STRINGS
+ * All messages are in English only
+ */
+
+// ===== ENGLISH STRINGS ONLY =====
+const strings = {
+    common: {
+        error: '❌ Error',
+        success: '✅ Success',
+        warning: '⚠️ Warning',
+        loading: '🔄 Loading...',
+        noPermission: '❌ You don\'t have permission to use this command.',
+        botNoAdmin: '❌ I need to be a group admin to do this.'
+    },
+    commands: {
+        help: {
+            title: 'HELP MENU',
+            multimedia: 'MULTIMEDIA',
+            sticker: 'Convert to sticker',
+            simage: 'Convert to image',
+            tools: 'TOOLS',
+            translate: 'Translate text',
+            tts: 'Convert to audio',
+            report: 'Report to owner',
+            groups: 'GROUPS',
+            ban: 'Ban user',
+            kick: 'Kick user',
+            mute: 'Mute user',
+            tagall: 'Mention everyone',
+            welcome: 'Automatic greetings',
+            goodbye: 'Automatic farewells',
+            giveaway: 'Create giveaways',
+            system: 'SYSTEM',
+            status: 'View bot status',
+            update: 'Update bot',
+            reset: 'Restart bot'
+        },
+        ban: {
+            notAdmin: '❌ Only admins can ban.',
+            noBotAdmin: '❌ I need to be admin to ban.',
+            success: '✅ User banned successfully.'
+        },
+        sticker: {
+            needImage: '❌ You need to reply to an image or send one.',
+            needVideo: '❌ You need to reply to a video (max 10 seconds).',
+            videoTooLong: '❌ The video is too long (max 10 seconds).',
+            errorConverting: '❌ Error converting to sticker.'
+        },
+        simage: {
+            needSticker: '❌ You need to reply to a sticker.',
+            errorConverting: '❌ Error converting the sticker.'
+        },
+        translate: {
+            needText: '❌ Usage: .trt <language> <text>',
+            errorTranslating: '❌ Error translating the text.'
+        },
+        tts: {
+            needText: '❌ You need to indicate the text to convert.',
+            errorConverting: '❌ Error converting to audio.'
+        },
+        report: {
+            sent: '✅ Report sent to owner.',
+            noReports: '📋 No reports',
+            activeReports: 'ACTIVE REPORTS',
+            from: 'From',
+            message: 'Message',
+            date: 'Date',
+            cleared: '✅ Reports cleared.'
+        },
+        tag: {
+            adminOnly: '❌ Only admins can mention everyone.',
+            botNoAdmin: '❌ I need to be admin to mention.',
+            adminMessage: 'ADMIN MESSAGE'
+        },
+        status: {
+            title: 'BOT STATUS',
+            uptime: 'Uptime',
+            ram: 'RAM',
+            commands: 'Commands',
+            groups: 'Groups',
+            version: 'Version'
+        },
+        update: {
+            checking: '🔄 Checking for updates...',
+            noUpdates: '✅ Bot is on the latest version.',
+            updating: '✅ Updated. Restarting in 3 seconds...',
+            error: '❌ Error updating the bot.'
+        },
+        welcome: {
+            ownerOnly: '❌ Only the owner can use this.',
+            enabled: '✅ Automatic greetings enabled.',
+            disabled: '🚫 Automatic greetings disabled.',
+            set: '✅ Welcome message set.',
+            usage: '❌ Incorrect usage\n\n.welcome on ➜ Enable\n.welcome off ➜ Disable\n.welcome set <message> ➜ Set message'
+        },
+        goodbye: {
+            ownerOnly: '❌ Only the owner can use this.',
+            enabled: '✅ Automatic farewells enabled.',
+            disabled: '🚫 Automatic farewells disabled.',
+            set: '✅ Farewell message set.',
+            usage: '❌ Incorrect usage\n\n.goodbye on ➜ Enable\n.goodbye off ➜ Disable\n.goodbye set <message> ➜ Set message'
+        },
+        giveaway: {
+            ownerOnly: '❌ Only the owner can create giveaways.',
+            needPrize: '❌ Usage: .giveaway start <prize>\n\nEx: .giveaway start Airpods',
+            started: '🎁 *GIVEAWAY STARTED*',
+            prize: 'Prize',
+            clickHere: 'Click here to participate!',
+            ended: '🏆 *GIVEAWAY ENDED*',
+            winner: 'Winner',
+            participants: 'Participants',
+            noParticipants: '❌ No participants in the giveaway.',
+            error: '❌ Error processing the giveaway.'
+        },
+        mute: {
+            adminOnly: '❌ Only admins can mute.',
+            botNoAdmin: '❌ I need to be admin to mute.',
+            muted: '🔇 *Group muted.* Only admins can send messages.',
+            unmuted: '🔊 *Group opened.* Everyone can send messages again.',
+            error: '❌ Error muting the group.'
+        },
+        sudo: {
+            ownerOnly: '❌ Only the owner can use this.',
+            added: '✅ User added to sudoers.',
+            removed: '✅ User removed from sudoers.',
+            list: '📋 *SUDOERS USERS*',
+            noSudoers: 'No sudoer users.',
+            usage: '❌ Usage: .sudo <add/remove/list> @user'
+        }
+    }
+};
+
+/**
+ * Gets a translated string (English only)
+ * @param {string} key - Translation key (commands.help.title)
+ * @param {*} defaultValue - Default value if key not found
+ * @returns {string} Translated string in English
+ */
+const t = (key, defaultValue = key) => {
+    const keys = key.split('.');
+    let value = strings;
+
+    for (const k of keys) {
+        if (value[k] !== undefined) {
+            value = value[k];
+        } else {
+            return defaultValue;
+        }
+    }
+
+    return value;
+};
+
+module.exports = {
+    t,
+    strings
+};

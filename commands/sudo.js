@@ -10,7 +10,7 @@ const fs = require('fs');
 module.exports = {
     name: 'sudo',
     alias: ['owner', 'superuser'],
-    async execute(sock, chatId, m, { args, text, senderIsOwner, t }) {
+    async execute(sock, chatId, m, { args, text, senderIsOwner }) {
         // Only the main owner can manage sudos
         if (!senderIsOwner) return;
 
@@ -33,12 +33,12 @@ module.exports = {
                 // Add new sudo
                 if (!user) {
                     return sock.sendMessage(chatId, { 
-                        text: t('commands.sudo.usage')
+                        text: '❌ Usage: .sudo <add/remove/list> @user'
                     });
                 }
                 await addSudo(user);
                 await sock.sendMessage(chatId, { 
-                    text: t('commands.sudo.added', { user: user.split('@')[0] }),
+                    text: `✅ User added to sudoers.`,
                     mentions: [user] 
                 }, { quoted: m });
                 break;
@@ -47,7 +47,7 @@ module.exports = {
             case 'remove':
                 // Remove a sudo
                 if (!user) {
-                    return sock.sendMessage(chatId, { text: t('commands.sudo.removed') });
+                    return sock.sendMessage(chatId, { text: '✅ User removed from sudoers.' });
                 }
                 await delSudo(user);
                 await sock.sendMessage(chatId, { 
@@ -61,10 +61,10 @@ module.exports = {
                 const sudos = getSudos();
                 
                 if (sudos.length === 0) {
-                    return sock.sendMessage(chatId, { text: t('commands.sudo.noSudoers') });
+                    return sock.sendMessage(chatId, { text: 'No sudoer users.' });
                 }
                 
-                let list = t('commands.sudo.list') + "\n━━━━━━━━━━━━━━━━\n\n";
+                let list = '📋 *SUDOERS USERS*\n━━━━━━━━━━━━━━━━\n\n';
                 sudos.forEach((s, i) => {
                     list += `${i + 1}. @${s.split('@')[0]}\\n`;
                 });
