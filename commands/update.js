@@ -42,7 +42,9 @@ function downloadFile(url, dest) {
             }
             const file = fs.createWriteStream(dest);
             res.pipe(file);
-            file.on('finish', () => file.close(resolve));
+            file.on('finish', () => file.close(() => resolve()));
+            file.on('error', reject);
+            res.on('error', reject);
         }).on('error', reject);
     });
 }
