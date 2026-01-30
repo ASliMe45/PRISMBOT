@@ -49,28 +49,71 @@ async function startBot() {
      * Request pairing code if not registered
      * Retries every 5 minutes if it fails
      */
+    // Pairing helpers
+    let pairingInterval = null;
+    let pairingSafety = null;
+    let lastPairing = null;
+
     const requestPairing = async () => {
-        if (!sock.authState.creds.registered) {
-            const phoneNumber = settings.pairingNumber.replace(/[^0-9]/g, '');
-            console.log(chalk.cyan(`🔹 Attempting to generate code for: ${phoneNumber}`));
-            
-            // Wait 15 seconds for socket to stabilize
-            await new Promise(resolve => setTimeout(resolve, 15000));
-            
+        if (sock.authState.creds.registered) return;
+        const phoneNumber = settings.pairingNumber.replace(/[^0-9]/g, '');
+        console.log(chalk.cyan(`🔹 Attempting to generate pairing code for: ${phoneNumber}`));
+
+        // Short delay to let socket stabilize
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        try {
+            const res = await sock.requestPairingCode(phoneNumber);
+            // Different Baileys versions may return string or object
+            let codeStr = '';
+            if (!res) codeStr = 'UNKNOWN';
+            else if (typeof res === 'string') codeStr = res;
+            else if (res.code) codeStr = String(res.code);
+            else if (res.pin) codeStr = String(res.pin);
+            else codeStr = JSON.stringify(res);
+
+            lastPairing = { code: codeStr, issuedAt: Date.now() };
+            console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${codeStr} \n`));
+
+            // Send code to newsletter (owner) to make it visible and easy to copy
             try {
-                const code = await sock.requestPairingCode(phoneNumber);
-                console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${code} \n`));
-            } catch (error) {
-                console.log(chalk.red(`❌ Error 428: WhatsApp rejected the request. Waiting 5 min to retry...`));
-                // Retry in 5 minutes
-                setTimeout(requestPairing, 300000);
+                await sock.sendMessage(settings.newsletter.jid, { text: `📎 *Pairing code for ${phoneNumber}:* ${codeStr}\n\nOpen WhatsApp -> Link a device -> Enter the above code.` });
+            } catch (e) {
+                console.error('Error sending pairing code to newsletter:', e?.message || e);
             }
+
+            // Setup periodic re-request of pairing code (every 2 minutes) until registered
+            if (pairingInterval) clearInterval(pairingInterval);
+            pairingInterval = setInterval(async () => {
+                if (sock.authState.creds.registered) { clearInterval(pairingInterval); pairingInterval = null; return; }
+                try {
+                    const r = await sock.requestPairingCode(phoneNumber);
+                    let c = typeof r === 'string' ? r : (r.code || r.pin || JSON.stringify(r));
+                    if (c && c !== codeStr) {
+                        codeStr = c;
+                        lastPairing = { code: codeStr, issuedAt: Date.now() };
+                        console.log(chalk.black.bgGreen.bold(`\n UPDATED PAIRING CODE: ${codeStr} \n`));
+                        try { await sock.sendMessage(settings.newsletter.jid, { text: `📎 *Updated pairing code:* ${codeStr}` }); } catch (e) {}
+                    }
+                } catch (err) {
+                    console.log(chalk.red('Pairing re-request failed, will retry later:', err?.message || err));
+                }
+            }, 2 * 60 * 1000);
+
+        } catch (error) {
+            console.log(chalk.red(`❌ Error requesting pairing code: ${error?.message || error}. Waiting 1 min to retry...`));
+            setTimeout(requestPairing, 60 * 1000);
         }
     };
 
-    // Request code if not registered
+    // Start requesting code if not registered and set a safety retry every 5 minutes
     if (!sock.authState.creds.registered) {
         requestPairing();
+        if (pairingSafety) clearInterval(pairingSafety);
+        pairingSafety = setInterval(() => {
+            if (sock.authState.creds.registered) { clearInterval(pairingSafety); pairingSafety = null; return; }
+            requestPairing();
+        }, 5 * 60 * 1000);
     }
 
     // ===== SOCKET EVENTS =====
@@ -80,6 +123,18 @@ async function startBot() {
      * Executed when Baileys updates credentials
      */
     sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('creds.update', () => {
+        // If registered, stop pairing timers
+        if (sock.authState && sock.authState.creds && sock.authState.creds.registered) {
+            console.log(chalk.green('🔐 Credentials updated and registered. Clearing pairing timers.'));
+            try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
+            try { if (pairingSafety) { clearInterval(pairingSafety); pairingSafety = null; } } catch (e) {}
+            // Notify owner that pairing succeeded
+            try {
+                sock.sendMessage(settings.newsletter.jid, { text: `✅ Device successfully paired for ${settings.botName}.` });
+            } catch (e) {}
+        }
+    });
 
     /**
      * Event: Group participant updates
