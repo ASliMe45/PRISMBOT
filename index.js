@@ -30,6 +30,7 @@ async function startBot() {
     // Get authentication state
     const { state, saveCreds } = await useMultiFileAuthState(`./session`);
     const { version } = await fetchLatestBaileysVersion();
+const QRCode = require('qrcode');
 
     // ===== WHATSAPP SOCKET CONFIGURATION =====
     const sock = makeWASocket({
@@ -74,13 +75,7 @@ async function startBot() {
 
             lastPairing = { code: codeStr, issuedAt: Date.now() };
             console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${codeStr} \n`));
-
-            // Send code to newsletter (owner) to make it visible and easy to copy
-            try {
-                await sock.sendMessage(settings.newsletter.jid, { text: `📎 *Pairing code for ${phoneNumber}:* ${codeStr}\n\nOpen WhatsApp -> Link a device -> Enter the above code.` });
-            } catch (e) {
-                console.error('Error sending pairing code to newsletter:', e?.message || e);
-            }
+            console.log(chalk.yellow('⚠️ Pairing code displayed in console only (not sent to newsletter).'));
 
             // Setup periodic re-request of pairing code (every 2 minutes) until registered
             if (pairingInterval) clearInterval(pairingInterval);
@@ -93,7 +88,7 @@ async function startBot() {
                         codeStr = c;
                         lastPairing = { code: codeStr, issuedAt: Date.now() };
                         console.log(chalk.black.bgGreen.bold(`\n UPDATED PAIRING CODE: ${codeStr} \n`));
-                        try { await sock.sendMessage(settings.newsletter.jid, { text: `📎 *Updated pairing code:* ${codeStr}` }); } catch (e) {}
+                        console.log(chalk.yellow('⚠️ Updated pairing code displayed in console only.'));
                     }
                 } catch (err) {
                     console.log(chalk.red('Pairing re-request failed, will retry later:', err?.message || err));
@@ -129,10 +124,8 @@ async function startBot() {
             console.log(chalk.green('🔐 Credentials updated and registered. Clearing pairing timers.'));
             try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
             try { if (pairingSafety) { clearInterval(pairingSafety); pairingSafety = null; } } catch (e) {}
-            // Notify owner that pairing succeeded
-            try {
-                sock.sendMessage(settings.newsletter.jid, { text: `✅ Device successfully paired for ${settings.botName}.` });
-            } catch (e) {}
+            // Credentials updated and registered — log only (no external notification)
+            console.log(chalk.green(`✅ Device successfully paired for ${settings.botName}.`));
         }
     });
 
@@ -197,7 +190,11 @@ async function startBot() {
         } else if (connection === 'open') {
             console.log(chalk.green.bold('✅ PRISMBOT CONNECTED SUCCESSFULLY'));
             
-            // Send message to newsletter
+            // Stop pairing timers if any (safety)
+            try { if (pairingInterval) { clearInterval(pairingInterval); pairingInterval = null; } } catch (e) {}
+            try { if (pairingSafety) { clearInterval(pairingSafety); pairingSafety = null; } } catch (e) {}
+
+            // Send boot message to newsletter
             try {
                 const botStats = stats.get();
                 const uptime = process.uptime();
@@ -232,6 +229,32 @@ async function startBot() {
                 });
             } catch (e) {
                 console.error('Error sending boot message to newsletter:', e);
+            }
+        }
+
+        // If WhatsApp provides a QR payload, show it in the terminal only (ASCII + raw). Do NOT send anywhere.
+        if (u.qr) {
+            try {
+                if (!u.qr || u.qr === (global.__lastQrSent__)) return;
+                global.__lastQrSent__ = u.qr;
+
+                // Show QR in terminal (ASCII) and raw text only
+                try {
+                    const ascii = await QRCode.toString(u.qr, { type: 'terminal' });
+                    console.log(chalk.cyan('\nPAIRING QR (scan this with WhatsApp -> Link a device):\n'));
+                    console.log(ascii);
+                } catch (e) {
+                    console.log(chalk.yellow('⚠️ Could not generate ASCII QR, showing raw QR string instead.'));
+                    console.log(chalk.black.bgGreen.bold(`\n RAW QR: ${u.qr} \n`));
+                }
+
+                if (lastPairing && lastPairing.code) {
+                    console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${lastPairing.code} \n`));
+                }
+
+                console.log(chalk.green('✅ QR shown in console only; not sent anywhere.'));
+            } catch (e) {
+                console.error('Error showing QR in console:', e);
             }
         }
     });
