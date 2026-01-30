@@ -18,6 +18,19 @@ const { getWelcome } = require('./lib/index');
 const stats = require('./lib/stats');
 const settings = require('./settings');
 
+// ===== RECONNECTION / PAIRING BACKOFF =====
+let reconnectAttempts = 0;               // number of reconnect attempts
+let maxReconnectDelay = 300000;         // 5 minutes max
+function scheduleReconnect() {
+    const delay = Math.min(maxReconnectDelay, 5000 * Math.pow(2, reconnectAttempts));
+    reconnectAttempts = Math.min(reconnectAttempts + 1, 20);
+    console.log(chalk.yellow(`🔁 Scheduling reconnect in ${Math.round(delay/1000)}s (attempt ${reconnectAttempts})`));
+    setTimeout(() => {
+        console.log(chalk.yellow('🔄 Reconnect attempt starting...'));
+        startBot();
+    }, delay);
+}
+
 // ===== KEEP PROCESS ACTIVE =====
 // Prevents Node.js from closing the process if there is no activity
 setInterval(() => {}, 1000 * 60 * 60);
@@ -56,6 +69,16 @@ const QRCode = require('qrcode');
     let lastPairing = null;
     let pairingBlocked = false; // set to true when session is logged out (stop further pairing attempts)
 
+    // pairing backoff attempts
+    let pairingBackoffAttempts = 0;
+
+    const schedulePairingRetry = (reason) => {
+        pairingBackoffAttempts = Math.min(pairingBackoffAttempts + 1, 6); // cap
+        const delay = Math.min(10 * 60 * 1000, 30 * 1000 * Math.pow(2, pairingBackoffAttempts - 1)); // 30s,60s,120s,... cap 10m
+        console.log(chalk.yellow(`⏱️ Scheduling pairing retry in ${Math.round(delay/1000)}s (attempt ${pairingBackoffAttempts})${reason ? ' - ' + reason : ''}`));
+        setTimeout(requestPairing, delay);
+    }
+
     const requestPairing = async () => {
         if (pairingBlocked) { console.log(chalk.red('⛔ Pairing blocked due to logged out session. Remove ./session and restart to pair.')); return; }
         if (sock.authState.creds.registered) return;
@@ -74,6 +97,9 @@ const QRCode = require('qrcode');
             else if (res.code) codeStr = String(res.code);
             else if (res.pin) codeStr = String(res.pin);
             else codeStr = JSON.stringify(res);
+
+            // Reset backoff on success
+            pairingBackoffAttempts = 0;
 
             lastPairing = { code: codeStr, issuedAt: Date.now() };
             console.log(chalk.black.bgGreen.bold(`\n YOUR PAIRING CODE: ${codeStr} \n`));
@@ -101,8 +127,8 @@ const QRCode = require('qrcode');
             }, 2 * 60 * 1000);
 
         } catch (error) {
-            console.log(chalk.red(`❌ Error requesting pairing code: ${error?.message || error}. Waiting 1 min to retry...`));
-            setTimeout(requestPairing, 60 * 1000);
+            console.log(chalk.red(`❌ Error requesting pairing code: ${error?.message || error}.`));
+            schedulePairingRetry(error?.message || String(error));
         }
     };
 
@@ -225,14 +251,13 @@ const QRCode = require('qrcode');
   *📝 Commands:* ${botStats.commands || 0}
   *👥 Groups:* ${botStats.groups?.length || 0}
 
-
 💬 The bot is ready to receive commands
    Type .help to see available commands
 
 *🔧 Author:* ${settings.author}
 *🏠 Repository:* ${settings.github.repo}
 
-       *BOT READY TO DOMINATE THE WORLD! 🌍*
+*BOT READY TO DOMINATE THE WORLD! 🌍*
 `.trim();
 
                 // Send to newsletter
