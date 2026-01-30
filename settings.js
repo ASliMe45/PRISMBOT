@@ -12,7 +12,7 @@ module.exports = {
     
     // ===== NUMBERS AND CONTACTS =====
     ownerNumber: "5355409528",  // Main owner number
-    pairingNumber: "5355409528", // Number to pair the bot
+    pairingNumber: "584269189952", // Number to pair the bot
     
     // ===== NEWSLETTER CONFIGURATION =====
     newsletter: {
